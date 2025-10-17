@@ -1,0 +1,41 @@
+name: test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.x.x
+
+    - name: Tests
+      run: |
+        # embed latest content to src/
+        dotnet run --project ./embedded  -c ${{ matrix.configuration }}  -f net8.0 -- --force --quiet
+
+        # run tests
+        dotnet run --project ./sample  -c ${{ matrix.configuration }}  -f net9.0
+        dotnet run --project ./sample  -c ${{ matrix.configuration }}  -f net9.0  -- --pretty-print
+
+        # run in net5.0 for Unity compatibility tests
+        dotnet run --project ./sample  -c ${{ matrix.configuration }}  -f net5.0
+        dotnet run --project ./sample  -c ${{ matrix.configuration }}  -f net5.0  -- --pretty-print
