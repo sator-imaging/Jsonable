@@ -32,4 +32,4 @@ jobs:
         # embed latest content to src/
         dotnet run --project ./embedded  -f net8.0 -- --force --quiet
 
-        dotnet run --project ./sample  -c Release -f ${{ env.target }} -- --benchmark
+        dotnet run --project ./sample  -c Release -f ${{ env.target }} -- --benchmark --short-run
