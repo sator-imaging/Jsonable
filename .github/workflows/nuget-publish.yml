@@ -24,14 +24,8 @@ jobs:
     - name: Pack (release)
       run: |
         dotnet build -c Release -p:ContinuousIntegrationBuild=true
-
-        cd ./src
-        dotnet pack  -c Release -p:ContinuousIntegrationBuild=true
-        cd ..
-
-        cd ./assertion
-        dotnet pack  -c Release -p:ContinuousIntegrationBuild=true
-        cd ..
+        dotnet pack ./src  -c Release -p:ContinuousIntegrationBuild=true
+        dotnet pack ./assertion  -c Release -p:ContinuousIntegrationBuild=true
 
     ################################
     #  NUGET
