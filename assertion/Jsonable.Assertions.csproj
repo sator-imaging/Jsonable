@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <AssemblyName>SatorImaging.$(MSBuildProjectName)</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <RootNamespace>Jsonable.Assertions</RootNamespace>
 
     <TargetFramework>netstandard2.1</TargetFramework>
