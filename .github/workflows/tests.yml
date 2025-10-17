@@ -1,4 +1,4 @@
-name: tests
+name: build
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
 
-  tests:
+  build:
 
     strategy:
       matrix:
@@ -32,11 +32,12 @@ jobs:
           10.x.x
           5.x.x
 
-    - name: Tests
+    - name: Embed resources
       run: |
-        # embed latest content to src/
-        dotnet run --project ./embedded  -c ${{ matrix.configuration }}  -f net8.0 -- --force --quiet
+        dotnet run --project ./embedded  -f net8.0 -- --force --quiet
 
+    - name: Build
+      run: |
         # run tests
         dotnet run --project ./sample  -c ${{ matrix.configuration }}  -f ${{ matrix.framework }}
         dotnet run --project ./sample  -c ${{ matrix.configuration }}  -f ${{ matrix.framework }}  -- --pretty-print
