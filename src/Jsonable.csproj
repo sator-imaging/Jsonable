@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- Directory.Build.props property won't be applied -->
   <PropertyGroup>
     <AssemblyName>SatorImaging.$(MSBuildProjectName)</AssemblyName>
+    <PackageId>$(AssemblyName)</PackageId>
   </PropertyGroup>
 
   <!-- minimal requirements for roslyn development -->
