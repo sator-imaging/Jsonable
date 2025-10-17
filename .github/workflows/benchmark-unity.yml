@@ -1,0 +1,25 @@
+on:
+  workflow_dispatch:
+
+jobs:
+
+  benchmark:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.x.x
+
+    - name: Tests
+      run: |
+        # embed latest content to src/
+        dotnet run --project ./embedded  -f net8.0 -- --force --quiet
+
+        dotnet run --project ./sample  -c Release -f net5.0 -- --benchmark
