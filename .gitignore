@@ -1,0 +1,13 @@
+.*
+*.md
+bin
+obj
+
+*.json
+*.jsonc
+!sample/**/*.json
+!sample/**/*.jsonc
+
+!.github
+!.gitignore
+!README.md
