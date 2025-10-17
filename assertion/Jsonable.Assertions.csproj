@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>Jsonable.Assertions</RootNamespace>
+
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Pin to 13.0.2
+         https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.1/manual/index.html
+    -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+
+    <PackageReference Include="FUnit" Version="0.5.0-rc.1" />
+
+    <PackageReference Include="SatorImaging.PragmaAnalyzer" Version="1.1.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>
