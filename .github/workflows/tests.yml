@@ -8,11 +8,14 @@ on:
 
 jobs:
 
-  build:
+  tests:
 
     strategy:
       matrix:
         configuration: [Debug, Release]
+
+        # net5.0 for Unity compatibility tests
+        framework: [net9.0, net5.0]
 
     runs-on: ubuntu-latest
 
@@ -25,7 +28,9 @@ jobs:
     - name: Install .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 10.x.x
+        dotnet-version: |
+          10.x.x
+          5.x.x
 
     - name: Tests
       run: |
@@ -33,9 +38,5 @@ jobs:
         dotnet run --project ./embedded  -c ${{ matrix.configuration }}  -f net8.0 -- --force --quiet
 
         # run tests
-        dotnet run --project ./sample  -c ${{ matrix.configuration }}  -f net9.0
-        dotnet run --project ./sample  -c ${{ matrix.configuration }}  -f net9.0  -- --pretty-print
-
-        # run in net5.0 for Unity compatibility tests
-        dotnet run --project ./sample  -c ${{ matrix.configuration }}  -f net5.0
-        dotnet run --project ./sample  -c ${{ matrix.configuration }}  -f net5.0  -- --pretty-print
+        dotnet run --project ./sample  -c ${{ matrix.configuration }}  -f ${{ matrix.framework }}
+        dotnet run --project ./sample  -c ${{ matrix.configuration }}  -f ${{ matrix.framework }}  -- --pretty-print

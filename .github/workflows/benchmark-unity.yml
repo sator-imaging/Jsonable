@@ -1,6 +1,10 @@
 on:
   workflow_dispatch:
 
+env:
+  # net5.0 for Unity compatibility tests
+  target: net5.0
+
 jobs:
 
   benchmark:
@@ -15,11 +19,13 @@ jobs:
     - name: Install .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 10.x.x
+        dotnet-version: |
+          10.x.x
+          5.x.x
 
-    - name: Tests
+    - name: Run benchmark
       run: |
         # embed latest content to src/
         dotnet run --project ./embedded  -f net8.0 -- --force --quiet
 
-        dotnet run --project ./sample  -c Release -f net5.0 -- --benchmark
+        dotnet run --project ./sample  -c Release -f ${{ env.target }} -- --benchmark
