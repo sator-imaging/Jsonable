@@ -8,10 +8,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 10.x.x
+        dotnet-version: 9.x.x  # 2025.10.17: .NET 10 RC2 seems that it does not pack package correctly
 
     - name: Embed resources
       run: |
