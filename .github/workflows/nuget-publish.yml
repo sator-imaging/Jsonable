@@ -1,0 +1,52 @@
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.x.x
+
+    - name: Embed resources
+      run: |
+        dotnet run --project ./embedded  -f net8.0 -- --force --quiet
+
+    - name: Test (release)
+      run: |
+        dotnet run --project ./sample  -f net9.0 -c Release
+
+    - name: Pack (release)
+      run: |
+        dotnet build -c Release -p:ContinuousIntegrationBuild=true
+
+        cd ./src
+        dotnet pack  -c Release -p:ContinuousIntegrationBuild=true
+        cd ..
+
+        cd ./assertion
+        dotnet pack  -c Release -p:ContinuousIntegrationBuild=true
+        cd ..
+
+    ################################
+    #  NUGET
+    - name: NuGet Publish
+      run: |
+        cd ./src
+        dotnet nuget push "bin/Release/*.nupkg"  \
+          -k ${{ secrets.NUGET_API_KEY }}  \
+          -s https://api.nuget.org/v3/index.json \
+          --timeout 60
+        cd ..
+
+        cd ./assertion
+        dotnet nuget push "bin/Release/*.nupkg"  \
+          -k ${{ secrets.NUGET_API_KEY }}  \
+          -s https://api.nuget.org/v3/index.json \
+          --timeout 60
+        cd ..
