@@ -23,9 +23,10 @@ jobs:
           10.x.x
           5.x.x
 
-    - name: Install dependencies
+    - name: Install libssl1.1 (for .NET 5)
       run: |
-        sudo apt-get update && sudo apt-get install -y libssl-dev
+        sudo apt-get update
+        sudo apt-get install -y libssl1.1 || sudo apt-get install -y libssl-dev
 
     - name: Embed resources
       run: |
