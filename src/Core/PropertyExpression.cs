@@ -502,6 +502,16 @@ $@"{indent}{{
                         return from();
                         DiagnosticDescriptor? from()
                         {
+                            // NOTE: to make things simple, always set 'nest' to property after method call.
+                            //       * property always returns copy of struct.
+                            //         so, ref type can reduce instructions but don't try it. don't make things complicated.
+                            //       * always check reference type existence even if it is not nullable.
+                            //         it's required for array item reuse.
+                            var reuseInstance = !propertyTypeSymbol.IsValueType
+                                ? $"(reuseInstance && {variableName} != null) ? {variableName} : new()"
+                                : $"new {resolvingTypeDisplayNameNonNullable}()"
+                                ;
+
                             if (isNullable)
                             {
                                 sb.Append(
@@ -513,16 +523,6 @@ $@"{indent}if (parser.TryTakeNull())
 "
                                 );
                             }
-
-                            // NOTE: to make things simple, always set 'nest' to property after method call.
-                            //       * property always returns copy of struct.
-                            //         so, ref type can reduce instructions but don't try it. don't make things complicated.
-                            //       * always check reference type existence even if it is not nullable.
-                            //         it's required for array item reuse.
-                            var reuseInstance = !propertyTypeSymbol.IsValueType
-                                ? $"(reuseInstance && {variableName} != null) ? {variableName} : new()"
-                                : $"new {resolvingTypeDisplayNameNonNullable}()"
-                                ;
 
                             sb.Append(
 $@"{indent}{{
@@ -666,18 +666,6 @@ $@"{indent}        }}
                                 var sizeVariableName = $"size_{localFunctionDepth}";
                                 var collectionVariableName = $"map_{localFunctionDepth}";
 
-                                if (isNullable)
-                                {
-                                    sb.Append(
-$@"{indent}if (parser.TryTakeNull())
-{indent}{{
-{indent}    {variableName} = null;
-{indent}}}
-{indent}else
-"
-                                    );
-                                }
-
                                 var concreteMapTypeName = resolvingTypeDisplayNameNonNullable;
                                 if (resolvingTypeSymbol.IsAbstract)  // IsAbstract includes interface types
                                 {
@@ -698,6 +686,18 @@ $@"{indent}if (parser.TryTakeNull())
                                 }
 
                                 var canHaveCapacityParameter = concreteMapTypeName.StartsWith("System.Collections.Generic.Dictionary<", StringComparison.Ordinal);
+
+                                if (isNullable)
+                                {
+                                    sb.Append(
+$@"{indent}if (parser.TryTakeNull())
+{indent}{{
+{indent}    {variableName} = null;
+{indent}}}
+{indent}else
+"
+                                    );
+                                }
 
                                 sb.Append(
 $@"{indent}{{
@@ -919,18 +919,6 @@ $@"{indent}        }}
                                     var collectionIndexVariableName = $"collectionIndex_{localFunctionDepth}";
                                     var isArrayReusableVariableName = $"isArrayReusable_{localFunctionDepth}";
 
-                                    if (isNullable)
-                                    {
-                                        sb.Append(
-$@"{indent}if (parser.TryTakeNull())
-{indent}{{
-{indent}    {variableName} = null;
-{indent}}}
-{indent}else
-"
-                                        );
-                                    }
-
                                     string collectionVariableDeclaration;
                                     string assign;
                                     string funcParamDeclaration;
@@ -965,9 +953,9 @@ $@"{indent}if (parser.TryTakeNull())
 {indent}    var {collectionVariableName} = {sizeVariableName} == 0
 {indent}        ? Array.Empty<{elementTypeDisplayName}>()
 {indent}        : {isArrayReusableVariableName}
-{indent}            ? {(isArray ? variableName : "(((default)))!  // ok")}
+{indent}            ? ((({(isArray ? variableName : "default")})))!  // ok
 {indent}            :
-#if NET6_0_OR_GREATER  // actual supported version is NET5_0 but NET5_0 target is used for older environment compatibility tests
+#if NET7_0_OR_GREATER  // actual supported version is NET *5* but NET *6* target is used for older environment compatibility tests
 {indent}                GC.AllocateUninitializedArray<{elementTypeDisplayName}>({sizeVariableName}, pinned: false);
 #else
 {indent}                new {arrayCtor};
@@ -1003,6 +991,18 @@ $@"{indent}if (parser.TryTakeNull())
 
                                         funcParamDeclaration = $", {resolvingTypeDisplayNameNonNullable} {collectionVariableName}";
                                         funcParams = $", {collectionVariableName}";
+                                    }
+
+                                    if (isNullable)
+                                    {
+                                        sb.Append(
+$@"{indent}if (parser.TryTakeNull())
+{indent}{{
+{indent}    {variableName} = null;
+{indent}}}
+{indent}else
+"
+                                        );
                                     }
 
                                     sb.Append(
