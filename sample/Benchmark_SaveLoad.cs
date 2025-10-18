@@ -18,6 +18,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 #pragma warning disable CA1822  // Mark members as static
 #pragma warning disable IDE2001  // Embedded statements must be on their own line
 #pragma warning disable CA1805  // Do not initialize unnecessarily
+#pragma warning disable CS1591  // Missing XML comment for publicly visible type or member
 
 namespace Sample
 {

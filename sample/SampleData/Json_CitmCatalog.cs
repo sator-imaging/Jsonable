@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 #pragma warning disable IDE1006  // Naming Styles
+#pragma warning disable CS1591   // Missing XML comment for publicly visible type or member
 
 namespace Sample.SampleData
 {
