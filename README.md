@@ -1,3 +1,12 @@
+[![Jsonable](https://img.shields.io/nuget/vpre/SatorImaging.Jsonable?label=Jsonable)](https://www.nuget.org/packages/SatorImaging.Jsonable)
+[![Assertions](https://img.shields.io/nuget/vpre/SatorImaging.Jsonable.Assertions?label=Assertions)](https://www.nuget.org/packages/SatorImaging.Jsonable.Assertions)
+&nbsp;
+[![build](https://github.com/sator-imaging/Jsonable/actions/workflows/build.yml/badge.svg)](https://github.com/sator-imaging/Jsonable/actions/workflows/build.yml)
+
+
+
+
+
 # Jsonable
 
 A high-performance, source-generated JSON serialization library for C#.
