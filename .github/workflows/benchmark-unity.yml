@@ -2,8 +2,8 @@ on:
   workflow_dispatch:
 
 env:
-  # net5.0 for Unity compatibility tests
-  target: net5.0
+  # net6.0 for Unity compatibility tests
+  target: net6.0
 
 jobs:
 

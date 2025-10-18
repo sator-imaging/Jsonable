@@ -5,8 +5,8 @@ dotnet run --project ./embedded  -f net8.0 -- --force --quiet  || (echo === ERRO
 
 echo.
 
-:: test both sdk (net5.0 for Unity compatibility test)
+:: test both sdk (net6.0 for Unity compatibility test)
 dotnet run --project ./sample  -f net9.0  %*  || (echo === ERROR === & exit 1)
-dotnet run --project ./sample  -f net5.0  %*  || (echo === ERROR === & exit 1)
+dotnet run --project ./sample  -f net6.0  %*  || (echo === ERROR === & exit 1)
 
 :: should also run with --pretty-print option in CI

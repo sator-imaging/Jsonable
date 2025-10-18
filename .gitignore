@@ -3,6 +3,8 @@
 bin
 obj
 
+obsolete
+
 *.json
 *.jsonc
 !sample/**/*.json

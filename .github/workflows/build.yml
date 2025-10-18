@@ -14,8 +14,8 @@ jobs:
       matrix:
         configuration: [Debug, Release]
 
-        # net5.0 for Unity compatibility tests
-        framework: [net9.0, net5.0]
+        # net6.0 for Unity compatibility tests
+        framework: [net9.0, net6.0]
 
     runs-on: ubuntu-latest
 
