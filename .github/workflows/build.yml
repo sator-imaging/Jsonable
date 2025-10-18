@@ -30,7 +30,7 @@ jobs:
       with:
         dotnet-version: |
           10.x.x
-          5.x.x
+          6.x.x
 
     - name: Embed resources
       run: |

@@ -21,7 +21,7 @@ jobs:
       with:
         dotnet-version: |
           10.x.x
-          5.x.x
+          6.x.x
 
     - name: Install libssl1.1 (for .NET 5)
       run: |
