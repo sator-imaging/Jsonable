@@ -254,7 +254,7 @@ namespace Jsonable
         }
 
 
-        public static bool TryCopyAndAdvance<TWriter>(TWriter writer, ReadOnlySpan<byte> value)
+        public static bool TryCopyAndAdvance<TWriter>(TWriter writer, byte[] value)  // Takes byte[] to reduce caller site code size
             where TWriter : IBufferWriter<byte>
         {
             if (value.Length == 0)
@@ -264,7 +264,7 @@ namespace Jsonable
 
             var span = writer.GetSpan(value.Length);
 
-            if (value.TryCopyTo(span))
+            if (value.AsSpan().TryCopyTo(span))
             {
                 writer.Advance(value.Length);
                 return true;
