@@ -29,7 +29,7 @@ A high-performance, source-generated JSON serialization library for C#.
 
 | MessagePack | Json.NET |
 |:-----------:|:--------:|
-| ![](./docs/Benchmark_MessagePack.png) | ![](./docs/Benchmark_JsonNET.png) |
+| ![](https://raw.githubusercontent.com/sator-imaging/Jsonable/refs/heads/main/docs/Benchmark_MessagePack.png) | ![](https://raw.githubusercontent.com/sator-imaging/Jsonable/refs/heads/main/docs/Benchmark_JsonNET.png) |
 
 
 <details>
