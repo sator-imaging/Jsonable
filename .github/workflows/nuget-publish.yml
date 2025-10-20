@@ -32,7 +32,7 @@ jobs:
 
     - name: Test (release)
       run: |
-        dotnet run --project ./sample  -f net9.0 -c Release
+        dotnet run --project ./tests  -f net9.0 -c Release
 
     ################################
     #  NUGET

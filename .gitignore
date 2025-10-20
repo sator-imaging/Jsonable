@@ -7,8 +7,8 @@ obsolete
 
 *.json
 *.jsonc
-!sample/**/*.json
-!sample/**/*.jsonc
+!tests/**/*.json
+!tests/**/*.jsonc
 
 !.github
 !.gitignore

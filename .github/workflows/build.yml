@@ -39,5 +39,5 @@ jobs:
     - name: Build
       run: |
         # run tests
-        dotnet run --project ./sample  -c ${{ matrix.configuration }}  -f ${{ matrix.framework }}
-        dotnet run --project ./sample  -c ${{ matrix.configuration }}  -f ${{ matrix.framework }}  -- --pretty-print
+        dotnet run --project ./tests  -c ${{ matrix.configuration }}  -f ${{ matrix.framework }}
+        dotnet run --project ./tests  -c ${{ matrix.configuration }}  -f ${{ matrix.framework }}  -- --pretty-print

@@ -5,4 +5,4 @@ dotnet run --project ./embedded  -f net8.0 -- --force --quiet  || (echo === ERRO
 
 echo.
 
-dotnet run --project ./sample  -c Release  %*  -- --benchmark  || (echo === ERROR === & exit 1)
+dotnet run --project ./tests  -c Release  %*  -- --benchmark  || (echo === ERROR === & exit 1)

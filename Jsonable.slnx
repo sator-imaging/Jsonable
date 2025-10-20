@@ -2,6 +2,6 @@
   <Project Path="assertion/Jsonable.Assertions.csproj" />
   <Project Path="embedded/Jsonable.Embedded.csproj" />
   <Project Path="src/Jsonable.csproj" />
-  <Project Path="sample/Sample.csproj" />
+  <Project Path="tests/Tests.csproj" />
   <Project Path="standalone/Standalone.csproj" />
 </Solution>
