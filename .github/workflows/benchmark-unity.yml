@@ -1,3 +1,5 @@
+name: Benchmark Unity
+
 on:
   workflow_dispatch:
 
@@ -34,4 +36,4 @@ jobs:
 
     - name: Run benchmark
       run: |
-        dotnet run --project ./sample  -c Release -f ${{ env.target }} -- --benchmark --short-run
+        dotnet run --project ./tests  -c Release -f ${{ env.target }} -- --benchmark  ##--short-run

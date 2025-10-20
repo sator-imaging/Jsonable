@@ -9,8 +9,8 @@ using Jsonable.Assertions;
 using Newtonsoft.Json;
 using Perfolizer.Horology;
 using Perfolizer.Metrology;
-using Sample;
-using Sample.SampleData;
+using Tests;
+using Tests.SampleData;
 using System;
 using System.Buffers;
 using System.IO;
@@ -197,6 +197,9 @@ if (test_comprehensive)
             throw new Exception("must not be reached");
         }
     }
+
+    // benchmark has some tests
+    new Benchmark_SaveLoad().Initialize(initForBenchmark: false);
 
     Console.WriteLine($"✔️ [{nameof(Jsonable)}] All comprehensive tests successfully completed");
 }

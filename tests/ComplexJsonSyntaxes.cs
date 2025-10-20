@@ -4,7 +4,7 @@ using Jsonable;
 #pragma warning disable CA1861  // Avoid constant arrays as arguments
 #pragma warning disable CA1852  // Seal internal types
 
-namespace Sample
+namespace Tests
 {
     [FromJson, ToJson] partial class Empty { }
     [FromJson, ToJson] partial class EmptyInEmpty { public Empty EmptyProp { get; set; } = new(); }

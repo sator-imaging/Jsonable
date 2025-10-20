@@ -8,7 +8,7 @@ using System.Collections.Generic;
 #pragma warning disable IDE0060  // Remove unused parameter
 #pragma warning disable IDE2001  // Embedded statements must be on their own line
 
-namespace Sample
+namespace Tests
 {
     [ToJson, FromJson] partial struct T_Struct { public float FloatValue { get; set; } }
     [ToJson, /*FromJson*/] readonly partial struct T_ReadOnlyStruct { public float FloatValue { get; } }
