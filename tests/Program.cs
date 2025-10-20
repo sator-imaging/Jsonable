@@ -185,12 +185,12 @@ if (test_comprehensive)
         if (jobject is Json_Twitter invalidT)
         {
             var invalid = invalidT.ToJsonable();
-            Must.BeTrue(new Json_CitmCatalog().FromJsonable(invalid) is < 0);
+            Must.BeTrue(new Json_CitmCatalog().FromJsonable(invalid, throwIfSyntaxError: false) is < 0);
         }
         else if (jobject is Json_CitmCatalog invalidC)
         {
             var invalid = invalidC.ToJsonable();
-            Must.BeTrue(new Json_Twitter().FromJsonable(invalid) is < 0);
+            Must.BeTrue(new Json_Twitter().FromJsonable(invalid, throwIfSyntaxError: false) is < 0);
         }
         else
         {
