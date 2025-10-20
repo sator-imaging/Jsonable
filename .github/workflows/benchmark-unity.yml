@@ -1,6 +1,8 @@
 name: Benchmark Unity
 
 on:
+  release:
+    types: [published]
   workflow_dispatch:
 
 env:
