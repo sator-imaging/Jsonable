@@ -1,4 +1,4 @@
-// #define __expected_errors
+//#define __expected_errors
 #if __expected_errors
 
 using Jsonable;
@@ -13,7 +13,7 @@ using System.Diagnostics.CodeAnalysis;
 #pragma warning disable CA1822  // Mark members as static
 #pragma warning disable IDE0251  // Member can be made 'readonly'
 
-namespace Sample
+namespace Tests
 {
     //001
     [ToJson] partial class ToJson_C { public float Value { set { } } }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 #pragma warning disable IDE1006  // Naming Styles
 #pragma warning disable CA1852  // Seal internal types
 
-namespace Sample
+namespace Tests
 {
     [FromJson]
     [ToJson]

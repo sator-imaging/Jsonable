@@ -4,7 +4,7 @@ using BenchmarkDotNet.Configs;
 using Jsonable.Assertions;
 using MessagePack;
 using Newtonsoft.Json;
-using Sample.SampleData;
+using Tests.SampleData;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 #pragma warning disable CA1805  // Do not initialize unnecessarily
 #pragma warning disable CS1591  // Missing XML comment for publicly visible type or member
 
-namespace Sample
+namespace Tests
 {
     [HideColumns(Column.Gen0, Column.Gen1, Column.Gen2, Column.Error, Column.Median, Column.StdDev, Column.RatioSD)]
     [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
@@ -30,7 +30,7 @@ namespace Sample
         const string BDN_PathFix = "../../../../../../../../";
         const int MinJsonLength = 400_000;
 
-        public const string SampleDataFolderSlash = "./sample/SampleData/";
+        public const string SampleDataFolderSlash = "./tests/SampleData/";
         public const string OutputFilePath = "./z_TEST_";
         public const string TwitterFileNameNoExt = "twitter";
         public const string CatalogFileNameNoExt = "citm_catalog";
@@ -61,7 +61,9 @@ namespace Sample
         public int Boost { get; set; }
 
         [GlobalSetup]
-        public void Initialize()
+        public void Initialize() => Initialize(initForBenchmark: true);
+
+        public void Initialize(bool initForBenchmark)
         {
             if (Twitter != null &&
                 Catalog != null &&
@@ -73,8 +75,8 @@ namespace Sample
                 return;
             }
 
-            TwitterJsonSource = File.ReadAllText(BDN_PathFix + SampleDataFolderSlash + TwitterFileNameNoExt + ".json");
-            CatalogJsonSource = File.ReadAllText(BDN_PathFix + SampleDataFolderSlash + CatalogFileNameNoExt + ".json");
+            TwitterJsonSource = File.ReadAllText((initForBenchmark ? BDN_PathFix : string.Empty) + SampleDataFolderSlash + TwitterFileNameNoExt + ".json");
+            CatalogJsonSource = File.ReadAllText((initForBenchmark ? BDN_PathFix : string.Empty) + SampleDataFolderSlash + CatalogFileNameNoExt + ".json");
 
             Twitter = JsonConvert.DeserializeObject<Json_Twitter>(TwitterJsonSource)
                 ?? throw new Exception("must not be reached");
@@ -120,6 +122,7 @@ namespace Sample
                 }
             }
 
+            // set after Boost applied
 
             TwitterWithComments = Twitter.ToJsonable();
             CatalogWithComments = Catalog.ToJsonable();
@@ -131,7 +134,6 @@ namespace Sample
             TwitterMessagePack = MessagePackSerializer.Serialize(Twitter);
             CatalogMessagePack = MessagePackSerializer.Serialize(Catalog);
 
-
             // reusable
             TwitterReusable = JsonConvert.DeserializeObject<Json_TwitterReusable>(JsonConvert.SerializeObject(Twitter))
                 ?? throw new Exception("must not be reached");
@@ -139,16 +141,17 @@ namespace Sample
             CatalogReusable = JsonConvert.DeserializeObject<Json_CitmCatalogReusable>(JsonConvert.SerializeObject(Catalog))
                 ?? throw new Exception("must not be reached");
 
-            TwitterReusable.statuses?.Clear();
-            TwitterReusable.FromJsonable(TwitterWithComments, reuseInstance: true);
-            TwitterReusable.statuses?.Clear();
-            TwitterReusable.FromJsonable(TwitterWithComments, reuseInstance: true);
-            JsonableDebugger.AssertPropertiesEqual<IEnumerable<Status>>((((Twitter.statuses)))!, (((TwitterReusable.statuses)))!);
-            JsonableDebugger.AssertPropertiesEqual<IEnumerable<Performance>>((((Catalog.performances)))!, (((CatalogReusable.performances)))!);
-
-
             // verify
             {
+                TwitterReusable.statuses?.Clear();
+                Must.BeEqual(0, (((TwitterReusable.statuses)))!.Count);
+                TwitterReusable.FromJsonable(TwitterWithComments, reuseInstance: true);
+                Must.HaveEqualProperties((((Twitter.statuses)))!, (((TwitterReusable.statuses)))!.ToArray());
+
+                // catalog has many lists/arrays. ok to skip read back tests. just check content
+                Must.HaveEqualProperties((((Catalog.performances)))!, (((CatalogReusable.performances)))!.ToArray());
+
+
                 var jsonableTwitter = new Json_Twitter();
                 jsonableTwitter.FromJsonable(TwitterWithComments);
                 Must.HaveEqualProperties(Twitter, jsonableTwitter);
@@ -311,7 +314,7 @@ namespace Sample
 
         const string LOAD = "Deserialize";
         [BenchmarkCategory(LOAD + TWITTER)][Benchmark(Baseline = true)] public int Twitter_Load_FromJsonable() { Twitter.FromJsonable(TwitterWithComments); return CheckResult(Twitter); }
-        [BenchmarkCategory(LOAD + TWITTER)][Benchmark] public int Twitter_Load_FromJsonableArray() { Twitter.FromJsonable(TwitterWithComments, reuseInstance: true); return CheckResult(Twitter); }
+        [BenchmarkCategory(LOAD + TWITTER)][Benchmark] public int Twitter_Load_FromJsonableReuseArray() { Twitter.FromJsonable(TwitterWithComments, reuseInstance: true); return CheckResult(Twitter); }
         [BenchmarkCategory(LOAD + TWITTER)]
         [Benchmark]
         public int Twitter_Load_FromJsonableReuseList()

@@ -1,6 +1,6 @@
 using Jsonable;
 
-namespace Sample
+namespace Tests
 {
     // partial read/write
     [ToJson(Property = nameof(Position))]
