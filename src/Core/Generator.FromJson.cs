@@ -87,7 +87,7 @@ using FromJsonHelpers = Jsonable.FromJsonHelpers;
 
     {Utils.GetPartialTypeDeclaration(jsonableTypeSymbol)}
     {{{lookupTableDeclaration}
-        public int FromJsonable(ReadOnlyMemory<byte> jsonable, bool reuseInstance = false, bool throwIfSyntaxError = false)
+        public int FromJsonable(ReadOnlyMemory<byte> jsonable, bool reuseInstance = false, bool throwIfSyntaxError = true)
         {{
             {SR.OnWillDeserialize}();
 
