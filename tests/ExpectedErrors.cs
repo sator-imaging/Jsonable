@@ -34,6 +34,10 @@ namespace Tests
     // no warn
     [FromJson] partial record struct FromJson_RS(float Value) { }
 
+    // IEnumerable is only valid for ToJson
+    [ToJson] partial class ToJson_OK { public IReadOnlyList<int> NoError { get; set; } = Array.Empty<int>(); }
+    [FromJson] partial class ToJson_NG { public IReadOnlyList<int> Error { get; set; } = Array.Empty<int>(); }
+
     //011
     [FromJson] class NoPartialFromJson { }
     [ToJson] class NoPartialToJson { }

@@ -38,6 +38,14 @@ namespace Tests
         public Dictionary<string, float> StringToFloatMapProp { get; set; } = new();
     }
 
+    [ToJson]
+    //[FromJson]
+    partial class ToJsonOnlyFeatures
+    {
+        public IReadOnlyList<int> EnumerableProp { get; set; } = Array.Empty<int>();
+        public IReadOnlyList<int>? EnumerableNull { get; set; }
+    }
+
     [ToJson(Property = nameof(Base64Prop))]
     [ToJson(PreservePropertyOrder = true)]  // need to preserve order to be able to compare with Json.NET result
     [FromJson]

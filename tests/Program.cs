@@ -442,6 +442,16 @@ if (test_basic)
         () => base64Limit.ToJsonable());
 
 
+    // IEnumerable is only valid for ToJson
+    var toJsonOnly = new ToJsonOnlyFeatures();
+    toJsonOnly.EnumerableProp = new int[] { 1, 22, 333 };
+    Must.HaveSameSequence(
+        toJsonOnly.ToJson(prettyPrint: false),
+        /*lang=json,strict*/
+        @"{""EnumerableProp"":[1,22,333],""EnumerableNull"":null}"
+    );
+
+
     Console.WriteLine();
     Console.WriteLine($"✔️ [{nameof(Jsonable)}] All basic compatibility tests successfully completed");
 }

@@ -547,7 +547,13 @@ $@"{indent}{{
                     // class: ICollection
                     else if (
                         specialType is SpecialType.System_Array or SpecialType.System_Collections_Generic_ICollection_T ||
-                        resolvingTypeSymbol.AllInterfaces.Any(i => i.ConstructedFrom.SpecialType == SpecialType.System_Collections_Generic_ICollection_T))
+                        resolvingTypeSymbol.AllInterfaces.Any(i => i.ConstructedFrom.SpecialType == SpecialType.System_Collections_Generic_ICollection_T) ||
+                        (isSerializer && (
+                            specialType is SpecialType.System_Collections_Generic_IEnumerable_T ||
+                            // TODO: emit error diagnostic for multiple IEnumerable<T> implementations
+                            resolvingTypeSymbol.AllInterfaces.Count(i => i.ConstructedFrom.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T) == 1
+                        ))
+                    )
                     {
                         // Check for value type collection container
                         if (resolvingTypeSymbol.IsValueType)
