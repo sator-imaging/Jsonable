@@ -217,6 +217,7 @@ namespace Tests
             w.Clear();
             return ret;
         }
+        [BenchmarkCategory(SAVE + TWITTER)]
         [Benchmark]
         public int Twitter_Save_ToJsonUtf8()
         {
@@ -239,7 +240,6 @@ namespace Tests
             return CheckJsonSize(ret);
         }
         [BenchmarkCategory(SAVE + TWITTER)][Benchmark] public int Twitter_Save_JsonNET() => CheckJsonSize(JsonConvert.SerializeObject(Twitter).Length);
-        [BenchmarkCategory(SAVE + TWITTER)]
         [BenchmarkCategory(SAVE + TWITTER)][Benchmark] public int Twitter_Save_ToJson() => CheckJsonSize(Twitter.ToJson().Length);
         [BenchmarkCategory(SAVE + TWITTER)][Benchmark] public int Twitter_Save_ToJsonable() => CheckJsonSize(Twitter.ToJsonable().Length);
 
@@ -255,6 +255,7 @@ namespace Tests
             w.Clear();
             return ret;
         }
+        [BenchmarkCategory(SAVE + CATALOG)]
         [Benchmark]
         public int Catalog_Save_ToJsonUtf8()
         {
@@ -277,7 +278,6 @@ namespace Tests
             return CheckJsonSize(ret);
         }
         [BenchmarkCategory(SAVE + CATALOG)][Benchmark] public int Catalog_Save_JsonNET() => CheckJsonSize(JsonConvert.SerializeObject(Catalog).Length);
-        [BenchmarkCategory(SAVE + CATALOG)]
         [BenchmarkCategory(SAVE + CATALOG)][Benchmark] public int Catalog_Save_ToJson() => CheckJsonSize(Catalog.ToJson().Length);
         [BenchmarkCategory(SAVE + CATALOG)][Benchmark] public int Catalog_Save_ToJsonable() => CheckJsonSize(Catalog.ToJsonable().Length);
 

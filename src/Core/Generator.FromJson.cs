@@ -94,7 +94,7 @@ using FromJsonHelpers = Jsonable.FromJsonHelpers;
 
             var encoder = JSONABLE.Encoder;{lookupTableLocalVarDeclaration}
 
-            int consumed;
+            //int consumed;
             ItemType itemType;
 
             while (parser.TryGetNext(out itemType))
