@@ -1,7 +1,6 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
-using Jsonable.Assertions;
 using MessagePack;
 using Newtonsoft.Json;
 using Tests.SampleData;
@@ -188,6 +187,11 @@ namespace Tests
 
 
         #region   Jsonable
+
+        readonly ArrayBufferWriter<byte> cache_buffer = new();
+        readonly MemoryStream cache_memoryStream = new();
+        Utf8JsonWriter cache_utf8Writer = (((default)))!;
+
         ///*
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -196,10 +200,6 @@ namespace Tests
             Must.BeTrue(length >= MinJsonLength * (Boost / 2));
             return 0;
         }
-
-        readonly ArrayBufferWriter<byte> cache_buffer = new();
-        readonly MemoryStream cache_memoryStream = new();
-        Utf8JsonWriter cache_utf8Writer = (((default)))!;
 
         const string TWITTER = "Twitter";
         const string CATALOG = "Catalog";
@@ -217,6 +217,13 @@ namespace Tests
             w.Clear();
             return ret;
         }
+        [Benchmark]
+        public int Twitter_Save_ToJsonUtf8()
+        {
+            var w = new ArrayBufferWriter<byte>();
+            Twitter.ToJsonUtf8(w, emitByteOrderMark: false, emitMetadataComments: false);
+            return CheckJsonSize(w.WrittenCount);
+        }
         [BenchmarkCategory(SAVE + TWITTER)][Benchmark] public int Twitter_Save_MsgPack() => MessagePackSerializer.Serialize(Twitter).Length;
         [BenchmarkCategory(SAVE + TWITTER)][Benchmark] public int Twitter_Save_SysTxtJson() => CheckJsonSize(JsonSerializer.Serialize(Twitter, Json_Twitter_STJ.Default.Json_Twitter).Length);
         [BenchmarkCategory(SAVE + TWITTER)]
@@ -233,15 +240,8 @@ namespace Tests
         }
         [BenchmarkCategory(SAVE + TWITTER)][Benchmark] public int Twitter_Save_JsonNET() => CheckJsonSize(JsonConvert.SerializeObject(Twitter).Length);
         [BenchmarkCategory(SAVE + TWITTER)]
-        [Benchmark]
-        public int Twitter_Save_ToJsonUtf8()
-        {
-            var w = new ArrayBufferWriter<byte>();
-            Twitter.ToJsonUtf8(w, emitByteOrderMark: false, emitMetadataComments: false);
-            return CheckJsonSize(w.WrittenCount);
-        }
-        [BenchmarkCategory(SAVE + TWITTER)][Benchmark] public int Twitter_Save_ToJsonable() => CheckJsonSize(Twitter.ToJsonable().Length);
         [BenchmarkCategory(SAVE + TWITTER)][Benchmark] public int Twitter_Save_ToJson() => CheckJsonSize(Twitter.ToJson().Length);
+        [BenchmarkCategory(SAVE + TWITTER)][Benchmark] public int Twitter_Save_ToJsonable() => CheckJsonSize(Twitter.ToJsonable().Length);
 
 
 
@@ -254,6 +254,13 @@ namespace Tests
             var ret = CheckJsonSize(w.WrittenCount);
             w.Clear();
             return ret;
+        }
+        [Benchmark]
+        public int Catalog_Save_ToJsonUtf8()
+        {
+            var w = new ArrayBufferWriter<byte>();
+            Catalog.ToJsonUtf8(w, emitByteOrderMark: false, emitMetadataComments: false);
+            return CheckJsonSize(w.WrittenCount);
         }
         [BenchmarkCategory(SAVE + CATALOG)][Benchmark] public int Catalog_Save_MsgPack() => MessagePackSerializer.Serialize(Catalog).Length;
         [BenchmarkCategory(SAVE + CATALOG)][Benchmark] public int Catalog_Save_SysTxtJson() => CheckJsonSize(JsonSerializer.Serialize(Catalog, Json_CitmCatalog_STJ.Default.Json_CitmCatalog).Length);
@@ -271,15 +278,8 @@ namespace Tests
         }
         [BenchmarkCategory(SAVE + CATALOG)][Benchmark] public int Catalog_Save_JsonNET() => CheckJsonSize(JsonConvert.SerializeObject(Catalog).Length);
         [BenchmarkCategory(SAVE + CATALOG)]
-        [Benchmark]
-        public int Catalog_Save_ToJsonUtf8()
-        {
-            var w = new ArrayBufferWriter<byte>();
-            Catalog.ToJsonUtf8(w, emitByteOrderMark: false, emitMetadataComments: false);
-            return CheckJsonSize(w.WrittenCount);
-        }
-        [BenchmarkCategory(SAVE + CATALOG)][Benchmark] public int Catalog_Save_ToJsonable() => CheckJsonSize(Catalog.ToJsonable().Length);
         [BenchmarkCategory(SAVE + CATALOG)][Benchmark] public int Catalog_Save_ToJson() => CheckJsonSize(Catalog.ToJson().Length);
+        [BenchmarkCategory(SAVE + CATALOG)][Benchmark] public int Catalog_Save_ToJsonable() => CheckJsonSize(Catalog.ToJsonable().Length);
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -454,6 +454,47 @@ namespace Tests
                 sum += buffer[i];
             }
             return sum;
+        }
+
+        */
+        #endregion
+
+
+        #region   HasFailed vs HasNoError (no performance difference but can reduce code size)
+        /*
+
+        // Twitter status has 100/1000 elements. each status has roughly 50 properties (incl. nest objects)
+        [Params(5000, 50_000)]
+        public int N { get; set; }
+
+        bool TryWrite() => true;
+
+        [Benchmark]
+        public bool HasFailed()
+        {
+            bool hasFailed = false;
+
+            var n = N;
+            for (int i = 0; i < n; i++)
+            {
+                hasFailed |= !TryWrite();
+            }
+
+            return hasFailed;
+        }
+
+        [Benchmark]
+        public bool HasNoError()
+        {
+            bool hasNoError = true;
+
+            var n = N;
+            for (int i = 0; i < n; i++)
+            {
+                hasNoError &= TryWrite();
+            }
+
+            return hasNoError;
         }
 
         */

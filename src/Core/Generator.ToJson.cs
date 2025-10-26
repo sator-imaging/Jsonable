@@ -50,20 +50,20 @@ using ToJsonHelpers = Jsonable.ToJsonHelpers;
             _ = writer.GetSpan({initialCapacity});  // bulk allocation at startup
 
             int bytesWritten;
-            bool hasFailed = false;
+            bool hasNoError = true;
             Span<byte> span;
 
             if (emitByteOrderMark)
             {{
-                hasFailed |= !ToJsonHelpers.TryCopyAndAdvance(writer, JSONABLE.Utf8Bom);
+                hasNoError &= ToJsonHelpers.TryCopyAndAdvance(writer, JSONABLE.Utf8Bom);
             }}
 
             if (emitMetadataComments)
             {{
-                hasFailed |= !ToJsonHelpers.TryWriteJsonableHeader(writer);
+                hasNoError &= ToJsonHelpers.TryWriteJsonableHeader(writer);
             }}
 
-            hasFailed |= !ToJsonHelpers.TryWriteChar(writer, '{{');
+            hasNoError &= ToJsonHelpers.TryWriteChar(writer, '{{');
 "
             );
 
@@ -75,7 +75,7 @@ using ToJsonHelpers = Jsonable.ToJsonHelpers;
                 if (generatedPropertyCount != 0)
                 {
                     sb.Append(
-@"            hasFailed |= !ToJsonHelpers.TryWriteChar(writer, ',');
+@"            hasNoError &= ToJsonHelpers.TryWriteChar(writer, ',');
 "
                     );
                 }
@@ -90,7 +90,7 @@ $@"
                     );
 
                     sb.Append(
-$@"                hasFailed |= !ToJsonHelpers.TryWriteKey(writer, emitMetadataComments, {SR.Utf8NamesClass}.{property.Name});
+$@"                hasNoError &= ToJsonHelpers.TryWriteKey(writer, emitMetadataComments, {SR.Utf8NamesClass}.{property.Name});
             }}
 "
                     );
@@ -123,9 +123,9 @@ $@"                hasFailed |= !ToJsonHelpers.TryWriteKey(writer, emitMetadataC
 
             sb.Append(
 $@"
-            hasFailed |= !ToJsonHelpers.TryWriteChar(writer, '}}');
+            hasNoError &= ToJsonHelpers.TryWriteChar(writer, '}}');
 
-            if (hasFailed)
+            if (!hasNoError)
             {{
                 JsonableException.Throw(""Failed to write one or more values, non-nullable type has null, or maybe insufficient buffer space."");
             }}
