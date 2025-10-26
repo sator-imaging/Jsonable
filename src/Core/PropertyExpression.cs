@@ -572,16 +572,20 @@ $@"{indent}{{
 
                         // Collection: Dictionary<string, T>
                         // --> Check if it's ICollection<KeyValuePair<TKey, TValue>>
-                        if (Utils.IsKeyValuePairCollection(resolvingTypeSymbol, context, out ITypeSymbol? keyType, out ITypeSymbol? valueType))
+                        if (Utils.IsKeyValuePairCollection(context, resolvingTypeSymbol, isSerializer, out ITypeSymbol? keyType, out ITypeSymbol? valueType))
                         {
                             // Check for ambiguous collection type
                             const string GenericCollectionFullPrefix = "System.Collections.Generic.";
                             if (!(
                                     resolvingTypeDisplayName.StartsWith(GenericCollectionFullPrefix + "Dictionary<", StringComparison.Ordinal) ||
                                     resolvingTypeDisplayName.StartsWith(GenericCollectionFullPrefix + "IDictionary<", StringComparison.Ordinal) ||
+                                    (isSerializer && resolvingTypeDisplayName.StartsWith(GenericCollectionFullPrefix + "IReadOnlyDictionary<", StringComparison.Ordinal)) ||
                                     resolvingTypeSymbol.AllInterfaces.Any(i =>
                                         i.IsGenericType &&
-                                        i.ConstructedFrom.ToDisplayString().StartsWith(GenericCollectionFullPrefix + "IDictionary<", StringComparison.Ordinal)
+                                        (
+                                            i.ConstructedFrom.ToDisplayString().StartsWith(GenericCollectionFullPrefix + "IDictionary<", StringComparison.Ordinal) ||
+                                            (isSerializer && i.ConstructedFrom.ToDisplayString().StartsWith(GenericCollectionFullPrefix + "IReadOnlyDictionary<", StringComparison.Ordinal))
+                                        )
                                     )
                                 )
                             )

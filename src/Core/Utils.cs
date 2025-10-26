@@ -218,8 +218,9 @@ using System.Text;
 
 
         public static bool IsKeyValuePairCollection(
-            ITypeSymbol typeSymbol,
             GeneratorExecutionContext context,
+            ITypeSymbol typeSymbol,
+            bool isSerializer,
             [NotNullWhen(true)] out ITypeSymbol? keyType,
             [NotNullWhen(true)] out ITypeSymbol? valueType)
         {
@@ -234,7 +235,10 @@ using System.Text;
 
             // Check if the type itself is ICollection<KeyValuePair<TKey, TValue>>
             if (typeSymbol is INamedTypeSymbol namedTypeSymbol &&
-                namedTypeSymbol.ConstructedFrom.SpecialType == SpecialType.System_Collections_Generic_ICollection_T &&
+                (
+                    namedTypeSymbol.ConstructedFrom.SpecialType == SpecialType.System_Collections_Generic_ICollection_T ||
+                    (isSerializer && namedTypeSymbol.ConstructedFrom.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+                ) &&
                 namedTypeSymbol.TypeArguments.Length == 1 &&
                 namedTypeSymbol.TypeArguments[0] is INamedTypeSymbol kvpArgSymbol &&
                 SymbolEqualityComparer.Default.Equals(kvpArgSymbol.ConstructedFrom, keyValuePairT))
@@ -247,7 +251,10 @@ using System.Text;
             // Check if the type implements ICollection<KeyValuePair<TKey, TValue>>
             else if (
                 typeSymbol is INamedTypeSymbol namedTypeSymbol2 && namedTypeSymbol2.AllInterfaces.FirstOrDefault(i =>
-                    i.ConstructedFrom.SpecialType == SpecialType.System_Collections_Generic_ICollection_T &&
+                    (
+                        i.ConstructedFrom.SpecialType == SpecialType.System_Collections_Generic_ICollection_T ||
+                        (isSerializer && i.ConstructedFrom.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+                    ) &&
                     i.TypeArguments.Length == 1 &&
                     i.TypeArguments[0] is INamedTypeSymbol kvpInterfaceArgSymbol &&
                     SymbolEqualityComparer.Default.Equals(kvpInterfaceArgSymbol.ConstructedFrom, keyValuePairT)

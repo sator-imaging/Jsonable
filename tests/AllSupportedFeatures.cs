@@ -42,8 +42,7 @@ namespace Tests
     //[FromJson]
     partial class ToJsonOnlyFeatures
     {
-        public IReadOnlyList<int> EnumerableProp { get; set; } = Array.Empty<int>();
-        public IReadOnlyList<int>? EnumerableNull { get; set; }
+        public IReadOnlyDictionary<string, IReadOnlyList<int>> ReadOnlyMap { get; set; } = new Dictionary<string, IReadOnlyList<int>>(capacity: 0);
     }
 
     partial class NestedJsonable
