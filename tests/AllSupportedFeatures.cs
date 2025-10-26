@@ -46,6 +46,24 @@ namespace Tests
         public IReadOnlyList<int>? EnumerableNull { get; set; }
     }
 
+    partial class NestedJsonable
+    {
+        partial struct Struct
+        {
+            partial record Record
+            {
+                partial record struct RecordStruct
+                {
+                    [FromJson, ToJson]
+                    partial class DeepNest
+                    {
+                        public int Value { get; set; }
+                    }
+                }
+            }
+        }
+    }
+
     [ToJson(Property = nameof(Base64Prop))]
     [ToJson(PreservePropertyOrder = true)]  // need to preserve order to be able to compare with Json.NET result
     [FromJson]

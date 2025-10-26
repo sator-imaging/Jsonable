@@ -73,7 +73,6 @@ $@"        }};
             var sb = Utils.GetStringBuilder(properties.Count);
 
             // Source generation statistics header will be prepended later
-            var nsDeclaration = Utils.GetNamespaceDeclaration(jsonableTypeSymbol);
             sb.Append(
 $@"{Utils.GenerateCSharpDirectives()}
 // To avoid accidentally referencing to non-shared resources, don't reference namespace.
@@ -83,7 +82,7 @@ using Parser = Jsonable.FromJsonHelpers.Parser;
 using ItemType = Jsonable.FromJsonHelpers.ItemType;
 using FromJsonHelpers = Jsonable.FromJsonHelpers;
 
-{nsDeclaration}
+{Utils.GetNamespaceAndContainingTypeDeclarations(jsonableTypeSymbol)}
 
     {Utils.GetPartialTypeDeclaration(jsonableTypeSymbol)}
     {{{lookupTableDeclaration}
@@ -230,7 +229,8 @@ $@"                        default:
             }}
         }}
     }}
-{(nsDeclaration.Length > 0 ? "}" : string.Empty)}
+
+{Utils.GetNamespaceAndContainingTypeDeclarationsCloser(jsonableTypeSymbol)}
 "
             );
 

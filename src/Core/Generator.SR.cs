@@ -14,10 +14,9 @@ namespace Jsonable.Core
             var sb = Utils.GetStringBuilder(properties.Count);
 
             // Source generation statistics header will be prepended later
-            var nsDeclaration = Utils.GetNamespaceDeclaration(typeSymbol);
             sb.Append(
 $@"{Utils.GenerateCSharpDirectives()}
-{nsDeclaration}
+{Utils.GetNamespaceAndContainingTypeDeclarations(typeSymbol)}
 
     {Utils.GetPartialTypeDeclaration(typeSymbol)}
     {{"
@@ -77,7 +76,8 @@ $@"            public static readonly byte[] {property.Name} = {declaration};
             sb.Append(
 $@"        }}
     }}
-{(nsDeclaration.Length > 0 ? "}" : string.Empty)}
+
+{Utils.GetNamespaceAndContainingTypeDeclarationsCloser(typeSymbol)}
 "
             );
 

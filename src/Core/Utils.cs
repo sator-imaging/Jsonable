@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -28,16 +29,6 @@ namespace Jsonable.Core
             }
         }
 
-        public static string GetNamespaceDeclaration(INamedTypeSymbol typeSymbol)
-        {
-            if (typeSymbol.ContainingNamespace.IsGlobalNamespace)
-            {
-                return string.Empty;
-            }
-
-            return $"namespace {typeSymbol.ContainingNamespace.ToDisplayString()} {{";
-        }
-
         public static string GetGenericAwareName(INamedTypeSymbol typeSymbol)
         {
             if (typeSymbol.IsGenericType)
@@ -45,6 +36,72 @@ namespace Jsonable.Core
                 return typeSymbol.Name + "T" + typeSymbol.TypeParameters.Length;
             }
             return typeSymbol.Name;
+        }
+
+
+        readonly static Stack<INamedTypeSymbol> EmptyTypeHierarchyStack = new(capacity: 0);
+
+        public static Stack<INamedTypeSymbol> GetContainingTypeHierarchyStack(INamedTypeSymbol typeSymbol)
+        {
+            var containing = typeSymbol.ContainingType;
+            if (containing == null)
+            {
+                return EmptyTypeHierarchyStack;
+            }
+
+            var result = new Stack<INamedTypeSymbol>(capacity: 8);
+
+            do
+            {
+                result.Push(containing);
+                containing = containing.ContainingType;
+            }
+            while (containing?.IsType == true);
+
+            return result;
+        }
+
+        public static string GetOutputSourceFileNamePrefix(INamedTypeSymbol typeSymbol)
+        {
+            var sb = GetStringBuilder(-1);
+
+            foreach (var containing in GetContainingTypeHierarchyStack(typeSymbol))
+            {
+                sb.Append($"{GetGenericAwareName(containing)}+");
+            }
+
+            sb.Append(GetGenericAwareName(typeSymbol));
+
+            return sb.ToString();
+        }
+
+        public static string GetNamespaceAndContainingTypeDeclarations(INamedTypeSymbol typeSymbol)
+        {
+            var sb = GetStringBuilder(-1);
+
+            if (!typeSymbol.ContainingNamespace.IsGlobalNamespace)
+            {
+                sb.Append($"namespace {typeSymbol.ContainingNamespace.ToDisplayString()} {{\n");
+            }
+
+            foreach (var containing in GetContainingTypeHierarchyStack(typeSymbol))
+            {
+                sb.Append($"{GetPartialTypeDeclaration(containing)} {{\n");
+            }
+
+            return sb.ToString().TrimEnd();
+        }
+
+        public static string GetNamespaceAndContainingTypeDeclarationsCloser(INamedTypeSymbol typeSymbol)
+        {
+            var result = typeSymbol.ContainingNamespace.IsGlobalNamespace ? string.Empty : "}\n";
+
+            foreach (var _ in GetContainingTypeHierarchyStack(typeSymbol))
+            {
+                result += "}\n";
+            }
+
+            return result.TrimEnd();
         }
 
 
