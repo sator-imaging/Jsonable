@@ -52,7 +52,7 @@ namespace Jsonable.Core
                                 sb.Append(
 $@"{indent}if ({variableName} == null)
 {indent}{{
-{indent}    hasFailed |= {(isNullable ? "!ToJsonHelpers.TryWriteNull(writer)" : "true")};
+{indent}    hasNoError &= ToJsonHelpers.TryWriteNull(writer);
 {indent}}}
 {indent}else
 "
@@ -61,7 +61,7 @@ $@"{indent}if ({variableName} == null)
 
                             sb.Append(
 $@"{indent}{{
-{indent}    hasFailed |= !ToJsonHelpers.TryWriteString(writer, {variableName}, needEscape: true, emitMetadataComments);
+{indent}    hasNoError &= ToJsonHelpers.TryWriteString(writer, {variableName}, needEscape: true, emitMetadataComments);
 {indent}}}
 "
                             );
@@ -100,7 +100,7 @@ $@"{indent}{{
                         {
                             sb.Append(
 $@"{indent}{{
-{indent}    hasFailed |= !ToJsonHelpers.TryWriteBoolean(writer, {variableName});
+{indent}    hasNoError &= ToJsonHelpers.TryWriteBoolean(writer, {variableName});
 {indent}}}
 "
 );
@@ -139,7 +139,7 @@ $@"{indent}if (Utf8Parser.TryParse(parser.RawSpan, out bool value, out consumed)
                         {
                             sb.Append(
 $@"{indent}{{
-{indent}    hasFailed |= !Utf8Formatter.TryFormat({variableName}, writer.GetSpan(40), out bytesWritten);  // Sufficient for all numbers
+{indent}    hasNoError &= Utf8Formatter.TryFormat({variableName}, writer.GetSpan(40), out bytesWritten);  // Sufficient for all numbers
 {indent}    writer.Advance(bytesWritten);
 {indent}}}
 "
@@ -181,7 +181,7 @@ $@"{indent}if ({variableName}.HasValue)
                                 sb.Append(
 $@"{indent}else
 {indent}{{
-{indent}    hasFailed |= !ToJsonHelpers.TryWriteNull(writer);
+{indent}    hasNoError &= ToJsonHelpers.TryWriteNull(writer);
 {indent}}}
 "
                                 );
@@ -254,7 +254,7 @@ $@"{indent}}}
                             {
                                 sb.Append(
 $@"{indent}{{
-{indent}    hasFailed |= !Utf8Formatter.TryFormat(({enumUnderlyingType.ToDisplayString()}){variableName}, writer.GetSpan(40), out bytesWritten);  // Sufficient for all numbers
+{indent}    hasNoError &= Utf8Formatter.TryFormat(({enumUnderlyingType.ToDisplayString()}){variableName}, writer.GetSpan(40), out bytesWritten);  // Sufficient for all numbers
 {indent}    writer.Advance(bytesWritten);
 {indent}}}
 "
@@ -299,13 +299,13 @@ $@"{indent}if (Utf8Parser.TryParse(parser.RawSpan, out {enumUnderlyingType.ToDis
 
                             sb.Append(
 $@"{indent}{{
-{indent}    if (emitMetadataComments) {{ hasFailed |= !ToJsonHelpers.TryWriteJsonableMetadata(writer, {UtcDateTimeLength}); }}
-{indent}    hasFailed |= !ToJsonHelpers.TryWriteChar(writer, '""');
+{indent}    if (emitMetadataComments) {{ hasNoError &= ToJsonHelpers.TryWriteJsonableMetadata(writer, {UtcDateTimeLength}); }}
+{indent}    hasNoError &= ToJsonHelpers.TryWriteChar(writer, '""');
 {indent}    {{    
-{indent}        hasFailed |= !Utf8Formatter.TryFormat({variableName}.UtcDateTime, writer.GetSpan({UtcDateTimeLength}), out bytesWritten, '{JSONABLE.DateTimeFormat}');  // Sufficient for ""YYYY-MM-DDTHH:MM:SS.FFFFFFFZ""
+{indent}        hasNoError &= Utf8Formatter.TryFormat({variableName}.UtcDateTime, writer.GetSpan({UtcDateTimeLength}), out bytesWritten, '{JSONABLE.DateTimeFormat}');  // Sufficient for ""YYYY-MM-DDTHH:MM:SS.FFFFFFFZ""
 {indent}        writer.Advance(bytesWritten);
 {indent}    }}
-{indent}    hasFailed |= !ToJsonHelpers.TryWriteChar(writer, '""');
+{indent}    hasNoError &= ToJsonHelpers.TryWriteChar(writer, '""');
 {indent}}}
 "
                             );
@@ -337,7 +337,7 @@ $@"{indent}{{
                         {
                             sb.Append(
 $@"{indent}{{
-{indent}    hasFailed |= !Utf8Formatter.TryFormat({variableName}.TotalMilliseconds, writer.GetSpan(25), out bytesWritten);  // Sufficient for TimeSpan.TotalMilliseconds as double
+{indent}    hasNoError &= Utf8Formatter.TryFormat({variableName}.TotalMilliseconds, writer.GetSpan(25), out bytesWritten);  // Sufficient for TimeSpan.TotalMilliseconds as double
 {indent}    writer.Advance(bytesWritten);
 {indent}}}
 "
@@ -371,13 +371,13 @@ $@"{indent}if (Utf8Parser.TryParse(parser.RawSpan, out double value, out consume
 
                             sb.Append(
 $@"{indent}{{
-{indent}    if (emitMetadataComments) {{ hasFailed |= !ToJsonHelpers.TryWriteJsonableMetadata(writer, {GuidLength}); }}
-{indent}    hasFailed |= !ToJsonHelpers.TryWriteChar(writer, '""');
+{indent}    if (emitMetadataComments) {{ hasNoError &= ToJsonHelpers.TryWriteJsonableMetadata(writer, {GuidLength}); }}
+{indent}    hasNoError &= ToJsonHelpers.TryWriteChar(writer, '""');
 {indent}    {{
-{indent}        hasFailed |= !Utf8Formatter.TryFormat({variableName}, writer.GetSpan({GuidLength}), out bytesWritten, '{JSONABLE.GuidFormat}');  // Sufficient for GUID in D format
+{indent}        hasNoError &= Utf8Formatter.TryFormat({variableName}, writer.GetSpan({GuidLength}), out bytesWritten, '{JSONABLE.GuidFormat}');  // Sufficient for GUID in D format
 {indent}        writer.Advance(bytesWritten);
 {indent}    }}
-{indent}    hasFailed |= !ToJsonHelpers.TryWriteChar(writer, '""');
+{indent}    hasNoError &= ToJsonHelpers.TryWriteChar(writer, '""');
 {indent}}}
 "
                             );
@@ -416,7 +416,7 @@ $@"{indent}{{
                                 sb.Append(
 $@"{indent}if ({variableName} == null)
 {indent}{{
-{indent}    hasFailed |= {(isNullable ? "!ToJsonHelpers.TryWriteNull(writer)" : "true")};
+{indent}    hasNoError &= ToJsonHelpers.TryWriteNull(writer);
 {indent}}}
 {indent}else
 "
@@ -426,7 +426,7 @@ $@"{indent}if ({variableName} == null)
                             sb.Append(
 $@"{indent}{{
 {indent}    var uri = {variableName}.ToString();
-{indent}    hasFailed |= !ToJsonHelpers.TryWriteString(writer, uri, needEscape: true, emitMetadataComments);
+{indent}    hasNoError &= ToJsonHelpers.TryWriteString(writer, uri, needEscape: true, emitMetadataComments);
 {indent}}}
 "
                             );
@@ -471,7 +471,7 @@ $@"{indent}{{
                                 sb.Append(
 $@"{indent}if ({variableName} == null)
 {indent}{{
-{indent}    hasFailed |= {(isNullable ? "!ToJsonHelpers.TryWriteNull(writer)" : "true")};
+{indent}    hasNoError &= ToJsonHelpers.TryWriteNull(writer);
 {indent}}}
 {indent}else
 "
@@ -605,7 +605,7 @@ $@"{indent}// Collection: Dictionary or IDictionary<TKey, TValue>
                                     sb.Append(
 $@"{indent}if ({variableName} == null)
 {indent}{{
-{indent}    hasFailed |= {(isNullable ? "!ToJsonHelpers.TryWriteNull(writer)" : "true")};
+{indent}    hasNoError &= ToJsonHelpers.TryWriteNull(writer);
 {indent}}}
 {indent}else
 "
@@ -614,12 +614,12 @@ $@"{indent}if ({variableName} == null)
 
                                 sb.Append(
 $@"{indent}{{
-{indent}    hasFailed = {localFuncName}(ref writer, {variableName});
+{indent}    hasNoError = {localFuncName}(ref writer, {variableName});
 {indent}    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
 {indent}    bool {localFuncName}(ref TWriter writer, {resolvingTypeDisplayNameNonNullable} {localFuncParamName})
 {indent}    {{
-{indent}        if (emitMetadataComments) {{ hasFailed |= !ToJsonHelpers.TryWriteJsonableMetadata(writer, {localFuncParamName}.Count()); }}
-{indent}        hasFailed |= !ToJsonHelpers.TryWriteChar(writer, '{{');
+{indent}        if (emitMetadataComments) {{ hasNoError &= ToJsonHelpers.TryWriteJsonableMetadata(writer, {localFuncParamName}.Count()); }}
+{indent}        hasNoError &= ToJsonHelpers.TryWriteChar(writer, '{{');
 
 {indent}        bool firstElement = true;
 {indent}        foreach (var item in {localFuncParamName})
@@ -627,7 +627,7 @@ $@"{indent}{{
 {indent}            var itemValue = item.Value;
 {indent}            if (!firstElement)
 {indent}            {{
-{indent}                hasFailed |= !ToJsonHelpers.TryWriteChar(writer, ',');
+{indent}                hasNoError &= ToJsonHelpers.TryWriteChar(writer, ',');
 {indent}            }}
 {indent}            firstElement = false;
 "
@@ -635,7 +635,7 @@ $@"{indent}{{
 
                                 sb.Append(
 $@"
-{indent}            hasFailed |= !ToJsonHelpers.TryWriteKey(writer, item.Key, needEscape: true, emitMetadataComments);
+{indent}            hasNoError &= ToJsonHelpers.TryWriteKey(writer, item.Key, needEscape: true, emitMetadataComments);
 "
                                 );
 
@@ -646,8 +646,8 @@ $@"
 
                                 sb.Append(
 $@"{indent}        }}
-{indent}        hasFailed |= !ToJsonHelpers.TryWriteChar(writer, '}}');
-{indent}        return hasFailed;
+{indent}        hasNoError &= ToJsonHelpers.TryWriteChar(writer, '}}');
+{indent}        return hasNoError;
 {indent}    }}
 {indent}}}
 "
@@ -803,7 +803,7 @@ $@"{indent}// Collection: Base64
                                         sb.Append(
 $@"{indent}if ({variableName} == null)
 {indent}{{
-{indent}    hasFailed |= {(isNullable ? "!ToJsonHelpers.TryWriteNull(writer)" : "true")};
+{indent}    hasNoError &= ToJsonHelpers.TryWriteNull(writer);
 {indent}}}
 {indent}else
 "
@@ -812,7 +812,7 @@ $@"{indent}if ({variableName} == null)
 
                                     sb.Append(
 $@"{indent}{{
-{indent}    hasFailed |= !ToJsonHelpers.TryWriteBase64(writer, {variableName}, emitMetadataComments);
+{indent}    hasNoError &= ToJsonHelpers.TryWriteBase64(writer, {variableName}, emitMetadataComments);
 {indent}}}
 "
                                     );
@@ -864,7 +864,7 @@ $@"{indent}// Collection: T[] or ICollection<T>
                                         sb.Append(
 $@"{indent}if ({variableName} == null)
 {indent}{{
-{indent}    hasFailed |= {(isNullable ? "!ToJsonHelpers.TryWriteNull(writer)" : "true")};
+{indent}    hasNoError &= ToJsonHelpers.TryWriteNull(writer);
 {indent}}}
 {indent}else
 "
@@ -873,19 +873,19 @@ $@"{indent}if ({variableName} == null)
 
                                     sb.Append(
 $@"{indent}{{
-{indent}    hasFailed = {localFuncName}(ref writer, {variableName});
+{indent}    hasNoError = {localFuncName}(ref writer, {variableName});
 {indent}    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
 {indent}    bool {localFuncName}(ref TWriter writer, {resolvingTypeDisplayNameNonNullable} {localFuncParamName})
 {indent}    {{
-{indent}        if (emitMetadataComments) {{ hasFailed |= !ToJsonHelpers.TryWriteJsonableMetadata(writer, {localFuncParamName}.Count()); }}
-{indent}        hasFailed |= !ToJsonHelpers.TryWriteChar(writer, '[');
+{indent}        if (emitMetadataComments) {{ hasNoError &= ToJsonHelpers.TryWriteJsonableMetadata(writer, {localFuncParamName}.Count()); }}
+{indent}        hasNoError &= ToJsonHelpers.TryWriteChar(writer, '[');
 
 {indent}        bool firstElement = true;
 {indent}        foreach (var item in {localFuncParamName})
 {indent}        {{
 {indent}            if (!firstElement)
 {indent}            {{
-{indent}                hasFailed |= !ToJsonHelpers.TryWriteChar(writer, ',');
+{indent}                hasNoError &= ToJsonHelpers.TryWriteChar(writer, ',');
 {indent}            }}
 {indent}            firstElement = false;
 "
@@ -897,8 +897,8 @@ $@"{indent}{{
 
                                     sb.Append(
 $@"{indent}        }}
-{indent}        hasFailed |= !ToJsonHelpers.TryWriteChar(writer, ']');
-{indent}        return hasFailed;
+{indent}        hasNoError &= ToJsonHelpers.TryWriteChar(writer, ']');
+{indent}        return hasNoError;
 {indent}    }}
 {indent}}}
 "
