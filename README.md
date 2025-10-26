@@ -9,15 +9,13 @@
 
 
 
-# Jsonable
-
-A high-performance, source-generated JSON serialization library for C#.
+**Jsonable** is a high-performance, source-generated JSON serialization library for C#.
 
 > Unity 2022 or later is supported
 
 
 
-## Benefits
+## Key Benefits
 
 - **High Performance**: Achieves superior serialization and deserialization speeds by generating code at compile-time, avoiding runtime reflection overhead.
 - **Compile-Time Safety**: Catches serialization errors during compilation rather than at runtime, leading to more robust applications.
@@ -127,7 +125,9 @@ WarmupCount=3
 
 
 
-## Quick Start
+
+
+# Quick Start
 
 ```csharp
 using Jsonable;
@@ -159,3 +159,71 @@ public class Program
     }
 }
 ```
+
+
+## Serialization and Deserialization Callbacks
+
+There are predefined `partial void` methods that will be invoked *if* it is implemented.
+
+```cs
+partial void OnWillSerialize();
+partial void OnDidSerialize();
+
+partial void OnWillDeserialize();
+partial void OnDidDeserialize();
+```
+
+
+
+
+
+# Supported Types
+
+## Collection Type Handling
+
+Here shows `reuseInstance` strategies for `FromJsonable` method.
+- `T[]`, `Base64`: reuse (overwrite) *if* array length matches
+- `ICollection<T>`: not reused at all
+- `List<T>`: add items
+- `Dictionary`, `IDictionary`: overwrite if key exists otherwise add item
+
+> [!TIP]
+> Existing items in list or dictionary are not cleared automatically.
+> To change behaviour, implement `OnWillDeserialize` callback that clears items before deserialize.
+
+
+
+## Struct Types
+
+### Primitive Structs (Roslyn `IsPrimitive` is true)
+- `bool`, ~~`char`~~
+- `byte`, `sbyte`
+- `short`, `ushort`
+- `int`, `uint`
+- `long`, `ulong`
+- `float`, `double`
+
+### Other Supported Structs
+- ~~`decimal`~~
+- ~~`DateTime`~~
+- `DateTimeOffset` (serialized as 'O' (ISO 8601) string; parsed time is always UTC)
+- `TimeSpan` (serialized as total milliseconds as double)
+- `Guid` (serialized as string in 'D' format)
+- `Enum` (serialized as underlying integer value)
+
+### Nullable Structs
+- `System.Nullable<T>` where `T` is any supported struct type.
+
+
+
+## Reference Types
+- `string`
+- `Uri` (serialized as string)
+- `T[]`, `ICollection<T>` (serialized as JSON array)
+    - `T` can be any supported type.
+    - `byte[]` is stored as base64 string.
+- `ICollection<KeyValuePair<TKey, TValue>>` (aka. Dictionary)
+    - `TKey` must be `string`.
+    - `TValue` can be any supported type.
+    - Serialized as JSON object.
+- Types decorated with `[ToJson]` attribute (recursively serialized)
