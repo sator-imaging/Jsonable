@@ -9,12 +9,13 @@ using Jsonable.Assertions;
 using Newtonsoft.Json;
 using Perfolizer.Horology;
 using Perfolizer.Metrology;
-using Tests;
-using Tests.SampleData;
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Tests;
+using Tests.SampleData;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
@@ -444,11 +445,15 @@ if (test_basic)
 
     // IEnumerable is only valid for ToJson
     var toJsonOnly = new ToJsonOnlyFeatures();
-    toJsonOnly.EnumerableProp = new int[] { 1, 22, 333 };
-    Must.HaveSameSequence(
+    toJsonOnly.ReadOnlyMap = new Dictionary<string, IReadOnlyList<int>>()
+    {
+        { "One", new List<int>() { 1, 22, 333 } },
+        { "Two", new List<int>() { 4, 45, 456 } },
+    };
+    Must.BeEqual(
         toJsonOnly.ToJson(prettyPrint: false),
         /*lang=json,strict*/
-        @"{""EnumerableProp"":[1,22,333],""EnumerableNull"":null}"
+        @"{""ReadOnlyMap"":{""One"":[1,22,333],""Two"":[4,45,456]}}"
     );
 
 
