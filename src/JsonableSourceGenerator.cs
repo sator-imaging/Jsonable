@@ -33,7 +33,7 @@ namespace Jsonable
             var generatedTargetProperties = new Dictionary<INamedTypeSymbol, HashSet<string>>(SymbolEqualityComparer.Default);
             var propertiesForSR = new Dictionary<INamedTypeSymbol, HashSet<IPropertySymbol>>(SymbolEqualityComparer.Default);
 
-            static void addProperties(
+            static void requestStaticResourceGeneration(
                 Dictionary<INamedTypeSymbol, HashSet<IPropertySymbol>> propertiesForSR,
                 INamedTypeSymbol typeSymbol,
                 IEnumerable<IPropertySymbol> jsonableProperties)
@@ -51,32 +51,62 @@ namespace Jsonable
             }
 
 
-            foreach (var candidateType in receiver.CandidateTypes)
+            foreach (var candidateTypeSyntax in receiver.CandidateTypes)
             {
                 // Check if the type is declared as partial
-                if (!candidateType.Modifiers.Any(modifier => modifier.IsKind(SyntaxKind.PartialKeyword)))
+                if (!candidateTypeSyntax.Modifiers.Any(modifier => modifier.IsKind(SyntaxKind.PartialKeyword)))
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
                         SR.MissingPartialKeywordDiagnostic,
-                        candidateType.Identifier.GetLocation(),
-                        candidateType.Identifier.Text));
+                        candidateTypeSyntax.Identifier.GetLocation(),
+                        candidateTypeSyntax.Identifier.Text));
 
                     continue; // Skip this type if it's not partial
                 }
 
 #if DEBUG
-                context.ReportDiagnostic(Diagnostic.Create(SR.DebugMessageDiagnostic, candidateType.Identifier.GetLocation(), "Candidate type found (1/3)"));
+                context.ReportDiagnostic(Diagnostic.Create(
+                    SR.DebugMessageDiagnostic, candidateTypeSyntax.Identifier.GetLocation(), "Candidate type found (1/3)"));
 #endif
 
-                SemanticModel model = context.Compilation.GetSemanticModel(candidateType.SyntaxTree);
+                SemanticModel model = context.Compilation.GetSemanticModel(candidateTypeSyntax.SyntaxTree);
 
-                if (model.GetDeclaredSymbol(candidateType) is not INamedTypeSymbol typeSymbol)
+                if (model.GetDeclaredSymbol(candidateTypeSyntax) is not INamedTypeSymbol typeSymbol)
                 {
                     continue;
                 }
 
+                // Check if the containing types are partial recursively
+                {
+                    bool noPartialParentFound = false;
+
+                    foreach (var containing in Utils.GetContainingTypeHierarchyStack(typeSymbol))
+                    {
+                        var declarations = containing.DeclaringSyntaxReferences.Select(x => x.GetSyntax()).OfType<BaseTypeDeclarationSyntax>();
+                        if (!declarations.Any(s => s.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword))))
+                        {
+                            foreach (var declaration in declarations)
+                            {
+                                context.ReportDiagnostic(Diagnostic.Create(
+                                    SR.ContainingTypeNotPartialDiagnostic,
+                                    declaration.Identifier.GetLocation(),
+                                    containing.Name));
+                            }
+
+                            noPartialParentFound = true;
+                        }
+                    }
+
+                    // If any containing type is not partial, we stop processing this candidate type
+                    if (noPartialParentFound)
+                    {
+                        continue;
+                    }
+                }
+
 #if DEBUG
-                context.ReportDiagnostic(Diagnostic.Create(SR.DebugMessageDiagnostic, typeSymbol.Locations.First(), "Type symbol found (2/3)"));
+                context.ReportDiagnostic(Diagnostic.Create(
+                    SR.DebugMessageDiagnostic, typeSymbol.Locations.First(), "Type symbol found (2/3)"));
 #endif
 
                 // NOTE: DO NOT perform any type check here!
@@ -134,7 +164,7 @@ namespace Jsonable
                                         SR.ConflictingAttributesOnPropertyDiagnostic,
                                         attributeSyntax.GetLocation(),
                                         (targetPropertyName.Length != 0 ? targetPropertyName : "*"),
-                                        candidateType.Identifier.Text));
+                                        candidateTypeSyntax.Identifier.Text));
                                     continue;
                                 }
 
@@ -150,7 +180,7 @@ namespace Jsonable
                                         SR.TargetPropertyNotFoundDiagnostic,
                                         attributeSyntax.GetLocation(),
                                         targetPropertyName,
-                                        candidateType.Identifier.Text));
+                                        candidateTypeSyntax.Identifier.Text));
                                     continue;
                                 }
 
@@ -172,10 +202,9 @@ namespace Jsonable
                                 // Generate serialization code
                                 var sourceCode = Generator.GenerateToJson(context, typeSymbol, jsonableProperties.ToList(), targetPropertyName);
                                 var fileNameSuffix = targetPropertyName.Length != 0 ? "+" + targetPropertyName : string.Empty;
-                                context.AddSource($"{Utils.GetGenericAwareName(typeSymbol)}.{attrName}{fileNameSuffix}.g.cs", sourceCode);
+                                context.AddSource($"{Utils.GetOutputSourceFileNamePrefix(typeSymbol)}.{attrName}{fileNameSuffix}.g.cs", sourceCode);
 
-                                // static resource generation request
-                                addProperties(propertiesForSR, typeSymbol, jsonableProperties);
+                                requestStaticResourceGeneration(propertiesForSR, typeSymbol, jsonableProperties);
                             }
                             break;
 
@@ -193,10 +222,9 @@ namespace Jsonable
 
                                 // Generate serialization code
                                 var sourceCode = Generator.GenerateFromJson(context, typeSymbol, jsonableProperties.ToList());
-                                context.AddSource($"{Utils.GetGenericAwareName(typeSymbol)}.{attrName}.g.cs", sourceCode);
+                                context.AddSource($"{Utils.GetOutputSourceFileNamePrefix(typeSymbol)}.{attrName}.g.cs", sourceCode);
 
-                                // static resource generation request
-                                addProperties(propertiesForSR, typeSymbol, jsonableProperties);
+                                requestStaticResourceGeneration(propertiesForSR, typeSymbol, jsonableProperties);
                             }
                             break;
 
@@ -210,7 +238,7 @@ namespace Jsonable
             foreach (var x in propertiesForSR)
             {
                 context.AddSource(
-                    $"{Utils.GetGenericAwareName(x.Key)}.SR.g.cs",
+                    $"{Utils.GetOutputSourceFileNamePrefix(x.Key)}.SR.g.cs",
                     Generator.GenerateStaticResources(x.Key, x.Value)
                 );
             }

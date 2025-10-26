@@ -1,4 +1,5 @@
 //#define __expected_errors
+
 #if __expected_errors
 
 using Jsonable;
@@ -36,7 +37,28 @@ namespace Tests
 
     // IEnumerable is only valid for ToJson
     [ToJson] partial class ToJson_OK { public IReadOnlyList<int> NoError { get; set; } = Array.Empty<int>(); }
+    // error
     [FromJson] partial class ToJson_NG { public IReadOnlyList<int> Error { get; set; } = Array.Empty<int>(); }
+
+    //014
+    class NonPartialContainingType
+    {
+        struct Struct
+        {
+            record Record
+            {
+                record struct RecordStruct
+                {
+                    [FromJson]
+                    [ToJson]
+                    partial class Nested
+                    {
+                        public int Value { get; set; }
+                    }
+                }
+            }
+        }
+    }
 
     //011
     [FromJson] class NoPartialFromJson { }

@@ -30,7 +30,6 @@ namespace Jsonable.Core
             ));
 
             // Source generation statistics header will be prepended later
-            var nsDeclaration = Utils.GetNamespaceDeclaration(jsonableTypeSymbol);
             sb.Append(
 $@"{Utils.GenerateCSharpDirectives()}
 // To avoid accidentally referencing to non-shared resources, don't reference namespace.
@@ -38,7 +37,7 @@ using JSONABLE = Jsonable.JSONABLE;
 using JsonableException = Jsonable.JsonableException;
 using ToJsonHelpers = Jsonable.ToJsonHelpers;
 
-{nsDeclaration}
+{Utils.GetNamespaceAndContainingTypeDeclarations(jsonableTypeSymbol)}
 
     {Utils.GetPartialTypeDeclaration(jsonableTypeSymbol)}
     {{
@@ -170,7 +169,8 @@ $@"
             // close namespace
             sb.Append(
 $@"    }}
-{(nsDeclaration.Length > 0 ? "}" : string.Empty)}
+
+{Utils.GetNamespaceAndContainingTypeDeclarationsCloser(jsonableTypeSymbol)}
 "
             );
 

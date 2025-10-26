@@ -72,6 +72,14 @@ namespace Jsonable.Core
             DiagnosticSeverity.Error,
             isEnabledByDefault: true);
 
+        public static DiagnosticDescriptor ContainingTypeNotPartialDiagnostic = new DiagnosticDescriptor(
+            DiagnosticPrefix + "014",
+            "Containing type not partial",
+            "Containing type '{0}' must be declared as partial to be processed by the Jsonable source generator",
+            DiagnosticCategory,
+            DiagnosticSeverity.Error,
+            isEnabledByDefault: true);
+
 
         // generation-time diagnostics
         public static DiagnosticDescriptor DateTimeNotSupportedDiagnostic = new DiagnosticDescriptor(
