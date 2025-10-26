@@ -110,7 +110,7 @@ $@"{indent}{{
                         DiagnosticDescriptor? READ()
                         {
                             sb.Append(
-$@"{indent}if (Utf8Parser.TryParse(parser.RawSpan, out bool value, out consumed))
+$@"{indent}if (Utf8Parser.TryParse(parser.RawSpan, out bool value, out var consumed))
 {indent}{{
 {indent}    {variableName} = value;
 {indent}    _ = parser.Skip(consumed);
@@ -139,7 +139,7 @@ $@"{indent}if (Utf8Parser.TryParse(parser.RawSpan, out bool value, out consumed)
                         {
                             sb.Append(
 $@"{indent}{{
-{indent}    hasNoError &= Utf8Formatter.TryFormat({variableName}, writer.GetSpan(40), out bytesWritten);  // Sufficient for all numbers
+{indent}    hasNoError &= Utf8Formatter.TryFormat({variableName}, writer.GetSpan(40), out var bytesWritten);  // Sufficient for all numbers
 {indent}    writer.Advance(bytesWritten);
 {indent}}}
 "
@@ -150,7 +150,7 @@ $@"{indent}{{
                         DiagnosticDescriptor? READ()
                         {
                             sb.Append(
-$@"{indent}if (Utf8Parser.TryParse(parser.RawSpan, out {resolvingTypeDisplayNameNonNullable} value, out consumed))
+$@"{indent}if (Utf8Parser.TryParse(parser.RawSpan, out {resolvingTypeDisplayNameNonNullable} value, out var consumed))
 {indent}{{
 {indent}    {variableName} = value;
 {indent}    _ = parser.Skip(consumed);
@@ -254,7 +254,7 @@ $@"{indent}}}
                             {
                                 sb.Append(
 $@"{indent}{{
-{indent}    hasNoError &= Utf8Formatter.TryFormat(({enumUnderlyingType.ToDisplayString()}){variableName}, writer.GetSpan(40), out bytesWritten);  // Sufficient for all numbers
+{indent}    hasNoError &= Utf8Formatter.TryFormat(({enumUnderlyingType.ToDisplayString()}){variableName}, writer.GetSpan(40), out var bytesWritten);  // Sufficient for all numbers
 {indent}    writer.Advance(bytesWritten);
 {indent}}}
 "
@@ -270,7 +270,7 @@ $@"{indent}{{
                             if (namedTypeSymbol?.EnumUnderlyingType is INamedTypeSymbol enumUnderlyingType)
                             {
                                 sb.Append(
-$@"{indent}if (Utf8Parser.TryParse(parser.RawSpan, out {enumUnderlyingType.ToDisplayString()} value, out consumed))
+$@"{indent}if (Utf8Parser.TryParse(parser.RawSpan, out {enumUnderlyingType.ToDisplayString()} value, out var consumed))
 {indent}{{
 {indent}    {variableName} = ({resolvingTypeDisplayName})value;
 {indent}    _ = parser.Skip(consumed);
@@ -302,7 +302,7 @@ $@"{indent}{{
 {indent}    if (emitMetadataComments) {{ hasNoError &= ToJsonHelpers.TryWriteJsonableMetadata(writer, {UtcDateTimeLength}); }}
 {indent}    hasNoError &= ToJsonHelpers.TryWriteChar(writer, '""');
 {indent}    {{    
-{indent}        hasNoError &= Utf8Formatter.TryFormat({variableName}.UtcDateTime, writer.GetSpan({UtcDateTimeLength}), out bytesWritten, '{JSONABLE.DateTimeFormat}');  // Sufficient for ""YYYY-MM-DDTHH:MM:SS.FFFFFFFZ""
+{indent}        hasNoError &= Utf8Formatter.TryFormat({variableName}.UtcDateTime, writer.GetSpan({UtcDateTimeLength}), out var bytesWritten, '{JSONABLE.DateTimeFormat}');  // Sufficient for ""YYYY-MM-DDTHH:MM:SS.FFFFFFFZ""
 {indent}        writer.Advance(bytesWritten);
 {indent}    }}
 {indent}    hasNoError &= ToJsonHelpers.TryWriteChar(writer, '""');
@@ -317,7 +317,7 @@ $@"{indent}{{
                             sb.Append(
 $@"{indent}{{
 {indent}    var date = parser.TakeStringBytes();
-{indent}    if (Utf8Parser.TryParse(date, out DateTimeOffset value, out consumed, '{JSONABLE.DateTimeFormat}'))
+{indent}    if (Utf8Parser.TryParse(date, out DateTimeOffset value, out var consumed, '{JSONABLE.DateTimeFormat}'))
 {indent}    {{
 {indent}        {variableName} = value;
 {indent}    }}
@@ -337,7 +337,7 @@ $@"{indent}{{
                         {
                             sb.Append(
 $@"{indent}{{
-{indent}    hasNoError &= Utf8Formatter.TryFormat({variableName}.TotalMilliseconds, writer.GetSpan(25), out bytesWritten);  // Sufficient for TimeSpan.TotalMilliseconds as double
+{indent}    hasNoError &= Utf8Formatter.TryFormat({variableName}.TotalMilliseconds, writer.GetSpan(25), out var bytesWritten);  // Sufficient for TimeSpan.TotalMilliseconds as double
 {indent}    writer.Advance(bytesWritten);
 {indent}}}
 "
@@ -348,7 +348,7 @@ $@"{indent}{{
                         DiagnosticDescriptor? READ()
                         {
                             sb.Append(
-$@"{indent}if (Utf8Parser.TryParse(parser.RawSpan, out double value, out consumed))
+$@"{indent}if (Utf8Parser.TryParse(parser.RawSpan, out double value, out var consumed))
 {indent}{{
 {indent}    {variableName} = TimeSpan.FromMilliseconds(value);
 {indent}    _ = parser.Skip(consumed);
@@ -374,7 +374,7 @@ $@"{indent}{{
 {indent}    if (emitMetadataComments) {{ hasNoError &= ToJsonHelpers.TryWriteJsonableMetadata(writer, {GuidLength}); }}
 {indent}    hasNoError &= ToJsonHelpers.TryWriteChar(writer, '""');
 {indent}    {{
-{indent}        hasNoError &= Utf8Formatter.TryFormat({variableName}, writer.GetSpan({GuidLength}), out bytesWritten, '{JSONABLE.GuidFormat}');  // Sufficient for GUID in D format
+{indent}        hasNoError &= Utf8Formatter.TryFormat({variableName}, writer.GetSpan({GuidLength}), out var bytesWritten, '{JSONABLE.GuidFormat}');  // Sufficient for GUID in D format
 {indent}        writer.Advance(bytesWritten);
 {indent}    }}
 {indent}    hasNoError &= ToJsonHelpers.TryWriteChar(writer, '""');
@@ -389,7 +389,7 @@ $@"{indent}{{
                             sb.Append(
 $@"{indent}{{
 {indent}    var guid = parser.TakeStringBytes();
-{indent}    if (Utf8Parser.TryParse(guid, out Guid value, out consumed, '{JSONABLE.GuidFormat}'))
+{indent}    if (Utf8Parser.TryParse(guid, out Guid value, out var consumed, '{JSONABLE.GuidFormat}'))
 {indent}    {{
 {indent}        {variableName} = value;
 {indent}    }}
@@ -620,10 +620,12 @@ $@"{indent}if ({variableName} == null)
 
                                 sb.Append(
 $@"{indent}{{
-{indent}    hasNoError = {localFuncName}(ref writer, {variableName});
+{indent}    hasNoError &= {localFuncName}(ref writer, {variableName}, emitMetadataComments);
 {indent}    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-{indent}    bool {localFuncName}(ref TWriter writer, {resolvingTypeDisplayNameNonNullable} {localFuncParamName})
+{indent}    static bool {localFuncName}(ref TWriter writer, {resolvingTypeDisplayNameNonNullable} {localFuncParamName}, bool emitMetadataComments)
 {indent}    {{
+{indent}        bool hasNoError = true;
+
 {indent}        if (emitMetadataComments) {{ hasNoError &= ToJsonHelpers.TryWriteJsonableMetadata(writer, {localFuncParamName}.Count()); }}
 {indent}        hasNoError &= ToJsonHelpers.TryWriteChar(writer, '{{');
 
@@ -724,7 +726,7 @@ $@"{indent}{{
 {indent}    {{
 {indent}        _ = parser.Skip(1);  // '}}'
 {indent}    }}
-{indent}    else if (!{localFuncName}(ref parser, {collectionVariableName}))
+{indent}    else if (!{localFuncName}(ref parser, {sizeVariableName}, {collectionVariableName}, reuseInstance, throwIfSyntaxError))
 {indent}    {{
 {indent}        {goToFailedOrReturnFalse}
 {indent}    }}
@@ -732,7 +734,7 @@ $@"{indent}{{
 {indent}    {variableName} = {collectionVariableName};
 
 {indent}    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-{indent}    bool {localFuncName}(ref Parser parser, {resolvingTypeDisplayNameNonNullable} {collectionVariableName})
+{indent}    static bool {localFuncName}(ref Parser parser, int {sizeVariableName}, {resolvingTypeDisplayNameNonNullable} {collectionVariableName}, bool reuseInstance, bool throwIfSyntaxError)
 {indent}    {{
 {indent}        while ({sizeVariableName} > 0)
 {indent}        {{
@@ -879,10 +881,12 @@ $@"{indent}if ({variableName} == null)
 
                                     sb.Append(
 $@"{indent}{{
-{indent}    hasNoError = {localFuncName}(ref writer, {variableName});
+{indent}    hasNoError &= {localFuncName}(ref writer, {variableName}, emitMetadataComments);
 {indent}    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-{indent}    bool {localFuncName}(ref TWriter writer, {resolvingTypeDisplayNameNonNullable} {localFuncParamName})
+{indent}    static bool {localFuncName}(ref TWriter writer, {resolvingTypeDisplayNameNonNullable} {localFuncParamName}, bool emitMetadataComments)
 {indent}    {{
+{indent}        bool hasNoError = true;
+
 {indent}        if (emitMetadataComments) {{ hasNoError &= ToJsonHelpers.TryWriteJsonableMetadata(writer, {localFuncParamName}.Count()); }}
 {indent}        hasNoError &= ToJsonHelpers.TryWriteChar(writer, '[');
 
@@ -919,7 +923,9 @@ $@"{indent}        }}
                                 }
                                 DiagnosticDescriptor? READ()
                                 {
-                                    var localFuncName = $"read_coll_{localFunctionDepth}";
+                                    bool loadAsArray = isArray || resolvingTypeSymbol.IsAbstract;  // IsAbstract includes interface types
+
+                                    var localFuncName = $"read_{(loadAsArray ? "array" : "coll")}_{localFunctionDepth}";
                                     var sizeVariableName = $"size_{localFunctionDepth}";
                                     var collectionVariableName = $"collection_{localFunctionDepth}";
                                     var collectionIndexVariableName = $"collectionIndex_{localFunctionDepth}";
@@ -929,7 +935,7 @@ $@"{indent}        }}
                                     string assign;
                                     string funcParamDeclaration;
                                     string funcParams;
-                                    if (isArray || resolvingTypeSymbol.IsAbstract)  // IsAbstract includes interface types
+                                    if (loadAsArray)
                                     {
                                         var elementTypeDisplayName = elementType.ToDisplayString();  // don't change element's nullability (int?[] cannot be int[])
 
@@ -966,7 +972,6 @@ $@"{indent}        }}
 #else
 {indent}                new {arrayCtor};
 #endif
-{indent}    int {collectionIndexVariableName} = 0;
 "
                                         ;
 
@@ -976,8 +981,8 @@ $@"{indent}        }}
                                         // perf: captured variable by local function will be class field.
                                         //       to avoid unnecessary class field access as possible, take necessary variables as func param.
                                         //       ---> increment captured index variable leads 2 class field access. eg., field = field + 1;  // read and assign
-                                        funcParamDeclaration = $", {elementTypeDisplayName}[] {collectionVariableName}, int {collectionIndexVariableName}, bool {isArrayReusableVariableName}";
-                                        funcParams = $", {collectionVariableName}, {collectionIndexVariableName}, {isArrayReusableVariableName}";
+                                        funcParamDeclaration = $", {elementTypeDisplayName}[] {collectionVariableName}, bool {isArrayReusableVariableName}";
+                                        funcParams = $", {collectionVariableName}, {isArrayReusableVariableName}";
                                     }
                                     else
                                     {
@@ -1024,7 +1029,7 @@ $@"{indent}{{
 {indent}    {{
 {indent}        _ = parser.Skip(1);  // ']'
 {indent}    }}
-{indent}    else if (!{localFuncName}(ref parser{funcParams}))
+{indent}    else if (!{localFuncName}(ref parser, {sizeVariableName}{funcParams}, reuseInstance, throwIfSyntaxError))
 {indent}    {{
 {indent}        {goToFailedOrReturnFalse}
 {indent}    }}
@@ -1032,8 +1037,8 @@ $@"{indent}{{
 {indent}    {variableName} = {collectionVariableName};
 
 {indent}    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-{indent}    bool {localFuncName}(ref Parser parser{funcParamDeclaration})
-{indent}    {{
+{indent}    static bool {localFuncName}(ref Parser parser, int {sizeVariableName}{funcParamDeclaration}, bool reuseInstance, bool throwIfSyntaxError)
+{indent}    {{{(loadAsArray ? $"\n{indent}        int {collectionIndexVariableName} = 0;\n" : string.Empty)}
 {indent}        while ({sizeVariableName} > 0)
 {indent}        {{
 {indent}            {sizeVariableName}--;

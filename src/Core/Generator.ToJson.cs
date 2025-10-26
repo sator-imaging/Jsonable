@@ -48,7 +48,7 @@ using ToJsonHelpers = Jsonable.ToJsonHelpers;
 
             _ = writer.GetSpan({initialCapacity});  // bulk allocation at startup
 
-            int bytesWritten;
+            //int bytesWritten;
             bool hasNoError = true;
             Span<byte> span;
 
