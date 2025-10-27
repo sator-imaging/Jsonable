@@ -227,3 +227,9 @@ Here shows `reuseInstance` strategies for `FromJsonable` method.
     - `TValue` can be any supported type.
     - Serialized as JSON object.
 - Types decorated with `[ToJson]` attribute (recursively serialized)
+
+
+
+## `ToJson` Only Supported
+- `IEnumerable<T>`
+- `IReadOnlyDictionary<TKey, TValue>`
