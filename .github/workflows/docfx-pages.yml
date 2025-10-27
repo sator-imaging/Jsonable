@@ -68,8 +68,8 @@ jobs:
 
           # paths must be relative from .docfx folder. default value is used when not set.
           # note that url works but only in top page. see sample website for detail.
-          ##site_logo:    'images/icon-128px.png'
-          ##site_favicon: 'images/icon-128px.png'
+          site_logo:    'images/icon-128px.png'
+          site_favicon: 'images/icon-128px.png'
 
           # advanced options
           # --> https://dotnet.github.io/docfx/docs/template.html?tabs=modern#custom-template
