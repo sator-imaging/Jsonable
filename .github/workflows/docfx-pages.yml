@@ -47,6 +47,10 @@ jobs:
       # after checkout, you can checkout another repo, copy logo image or
       # other assets into '.docfx' folder to setup your own docfx environment.
       # note that images must be copied into '.docfx/images', 'images' or '.images'.
+      - name: Icon setup
+        run: |
+          mkdir -p .docfx/images
+          cp icon-128px.png .docfx/images
 
 
       ######  main  ######
