@@ -231,7 +231,7 @@ namespace Jsonable
             // TODO: avoid allocating new string instance
             sb.Append(value);
 
-            // NOTE: unescape changes the length, so it should be sticked to the end.
+            // NOTE: unescape shortens the text length, so index should be sticked to the end.
             int lengthToEnd = sb.Length - replaceStartIndex;
 
             // NOTE: replace order is important!
@@ -245,7 +245,7 @@ namespace Jsonable
             lengthToEnd = Math.Max(0, sb.Length - replaceStartIndex);
             sb.Replace(@"\""", "\"", sb.Length - lengthToEnd, lengthToEnd);     // then quote
             lengthToEnd = Math.Max(0, sb.Length - replaceStartIndex);
-            sb.Replace("\uFFFF", "\\", sb.Length - lengthToEnd, lengthToEnd);   // finally replace to backslash
+            sb.Replace("\uFFFF", "\\", sb.Length - lengthToEnd, lengthToEnd);   // finally replace temp char to backslash
 
             var result = sb.ToString();
             sb.Length = 0;
