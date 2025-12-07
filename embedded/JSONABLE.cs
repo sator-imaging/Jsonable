@@ -1,3 +1,6 @@
+// Licensed under the MIT License
+// https://github.com/sator-imaging/Jsonable
+
 // NOTE: this script file is included in analyzer build AND embedded in target assembly.
 //       * some methods are not called in ANALYZER so it can be excluded from ANALYZER build.
 //       * the following directive is resolved in target assembly because it is EMBEDDED.

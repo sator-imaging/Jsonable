@@ -1,3 +1,6 @@
+// Licensed under the MIT License
+// https://github.com/sator-imaging/Jsonable
+
 using System;
 using System.Collections.Generic;
 using System.IO;

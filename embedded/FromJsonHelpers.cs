@@ -1,3 +1,6 @@
+// Licensed under the MIT License
+// https://github.com/sator-imaging/Jsonable
+
 #if DEBUG
 //#define __printf_debug__TryGetNext
 //#define __printf_debug__TakeCollectionSizeOrNegative

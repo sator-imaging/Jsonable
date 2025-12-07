@@ -1,3 +1,6 @@
+// Licensed under the MIT License
+// https://github.com/sator-imaging/Jsonable
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
