@@ -11,7 +11,10 @@ namespace Jsonable.Core
     {
         public const string FromJsonHelpers
 =
-@"#if DEBUG
+@"// Licensed under the MIT License
+// https://github.com/sator-imaging/Jsonable
+
+#if DEBUG
 //#define __printf_debug__TryGetNext
 //#define __printf_debug__TakeCollectionSizeOrNegative
 //#define __printf_debug__TakeString
@@ -397,7 +400,10 @@ namespace Jsonable
 ;
         public const string JSONABLE
 =
-@"// NOTE: this script file is included in analyzer build AND embedded in target assembly.
+@"// Licensed under the MIT License
+// https://github.com/sator-imaging/Jsonable
+
+// NOTE: this script file is included in analyzer build AND embedded in target assembly.
 //       * some methods are not called in ANALYZER so it can be excluded from ANALYZER build.
 //       * the following directive is resolved in target assembly because it is EMBEDDED.
 //       * source generator in Unity runs on unknown environment so directive for Unity is required.
@@ -955,26 +961,6 @@ namespace Jsonable
                     _ => 0,
                 };
             }
-
-            /// <summary>
-            /// Compute FNV-1a (32-bit) hash.
-            /// </summary>
-            /*
-            static uint fnv_1a(ReadOnlySpan<byte> data)
-            {
-                const uint FNV_offset_basis = 2166136261;
-                const uint FNV_prime = 16777619;
-
-                uint hash = FNV_offset_basis;
-
-                for (int i = 0; i < data.Length; i++)
-                {
-                    hash = (hash ^ data[i]) * FNV_prime;
-                }
-
-                return hash;
-            }
-            */
         }
     }
 }
@@ -982,7 +968,10 @@ namespace Jsonable
 ;
         public const string ToJsonHelpers
 =
-@"using System;
+@"// Licensed under the MIT License
+// https://github.com/sator-imaging/Jsonable
+
+using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Buffers.Text;
