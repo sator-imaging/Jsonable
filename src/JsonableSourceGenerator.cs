@@ -33,8 +33,11 @@ namespace Jsonable
             }
 
 
-            var generatedTargetProperties = new Dictionary<INamedTypeSymbol, HashSet<string>>(SymbolEqualityComparer.Default);
-            var propertiesForSR = new Dictionary<INamedTypeSymbol, HashSet<IPropertySymbol>>(SymbolEqualityComparer.Default);
+            // FIX: symbol comparison is correct but got warning
+#pragma warning disable RS1024  // Symbols should be compared for equality
+            var generatedTargetProperties = new Dictionary<INamedTypeSymbol, HashSet<string>>(comparer: SymbolEqualityComparer.Default);
+            var propertiesForSR = new Dictionary<INamedTypeSymbol, HashSet<IPropertySymbol>>(comparer: SymbolEqualityComparer.Default);
+#pragma warning restore RS1024
 
             static void requestStaticResourceGeneration(
                 Dictionary<INamedTypeSymbol, HashSet<IPropertySymbol>> propertiesForSR,
@@ -43,7 +46,11 @@ namespace Jsonable
             {
                 if (!propertiesForSR.TryGetValue(typeSymbol, out var set))
                 {
-                    set = new(SymbolEqualityComparer.Default);
+                    // FIX: symbol comparison is correct but got warning
+#pragma warning disable RS1024  // Symbols should be compared for equality
+                    set = new(comparer: SymbolEqualityComparer.Default);
+#pragma warning restore RS1024
+
                     propertiesForSR.Add(typeSymbol, set);
                 }
 
@@ -258,6 +265,7 @@ namespace Jsonable
         )
         {
             var currentSymbol = typeSymbol;
+            var symbolComparer = SymbolEqualityComparer.Default;
 
         LOOP:
             foreach (var propertySymbol in currentSymbol.GetMembers().OfType<IPropertySymbol>())
@@ -270,7 +278,7 @@ namespace Jsonable
 
                 if (excludeInherited)
                 {
-                    if (!propertySymbol.ContainingType.Equals(typeSymbol, SymbolEqualityComparer.Default))
+                    if (!propertySymbol.ContainingType.Equals(typeSymbol, symbolComparer))
                     {
                         continue;
                     }

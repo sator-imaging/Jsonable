@@ -559,26 +559,6 @@ namespace Jsonable
                     _ => 0,
                 };
             }
-
-            /// <summary>
-            /// Compute FNV-1a (32-bit) hash.
-            /// </summary>
-            /*
-            static uint fnv_1a(ReadOnlySpan<byte> data)
-            {
-                const uint FNV_offset_basis = 2166136261;
-                const uint FNV_prime = 16777619;
-
-                uint hash = FNV_offset_basis;
-
-                for (int i = 0; i < data.Length; i++)
-                {
-                    hash = (hash ^ data[i]) * FNV_prime;
-                }
-
-                return hash;
-            }
-            */
         }
     }
 }
