@@ -1,31 +1,37 @@
+<div align="center">
+
+# Jsonable
+
+**High Performance JSON Serializer for .NET / Unity**
+
 [![Jsonable](https://img.shields.io/nuget/vpre/SatorImaging.Jsonable?label=Jsonable)](https://www.nuget.org/packages/SatorImaging.Jsonable)
 [![Assertions](https://img.shields.io/nuget/vpre/SatorImaging.Jsonable.Assertions?label=Assertions)](https://www.nuget.org/packages/SatorImaging.Jsonable.Assertions)
-&nbsp;
 [![build](https://github.com/sator-imaging/Jsonable/actions/workflows/build.yml/badge.svg)](https://github.com/sator-imaging/Jsonable/actions/workflows/build.yml)
 &nbsp;
 [![DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/sator-imaging/Jsonable)
 
+*Unity 2022 or later is supported*
+
+</div>
 
 
+&nbsp;
 
-
-**Jsonable** is a high-performance, source-generated JSON serialization library for C#.
-
-> Unity 2022 or later is supported
-
-
-
-## Key Benefits
 
 - **High Performance**: Achieves superior serialization and deserialization speeds by generating code at compile-time, avoiding runtime reflection overhead.
 - **Compile-Time Safety**: Catches serialization errors during compilation rather than at runtime, leading to more robust applications.
-- **Reduced Memory Allocations**: Optimized code generation minimizes memory footprint.
-- **Easy to Use**: Integrates seamlessly with existing C# projects and types.
+- **Reduced Allocations**: Optimized code generation minimizes memory footprint.
+- **Ease of Use**: Integrates seamlessly with existing C# projects and types.
 
 
-### Performance Comparison
+&nbsp;
 
-| MessagePack | Json.NET |
+
+## Performance Comparison
+
+Deserialization is blazingly fast, almost on a par with the binary serializer.
+
+| vs. MessagePack | vs. Json.NET |
 |:-----------:|:--------:|
 | ![](https://raw.githubusercontent.com/sator-imaging/Jsonable/refs/heads/main/docs/Benchmark_MessagePack.png) | ![](https://raw.githubusercontent.com/sator-imaging/Jsonable/refs/heads/main/docs/Benchmark_JsonNET.png) |
 
@@ -124,6 +130,9 @@ WarmupCount=3
 </details>
 
 
+&nbsp;
+
+
 
 
 
@@ -172,6 +181,9 @@ partial void OnDidSerialize();
 partial void OnWillDeserialize();
 partial void OnDidDeserialize();
 ```
+
+
+&nbsp;
 
 
 
