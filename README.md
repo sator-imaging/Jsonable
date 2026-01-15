@@ -242,6 +242,6 @@ Here shows `reuseInstance` strategies for `FromJsonable` method.
 
 
 
-## `ToJson` Only Supported
+## Serialization Only
 - `IEnumerable<T>`
 - `IReadOnlyDictionary<TKey, TValue>`
