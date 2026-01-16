@@ -27,7 +27,7 @@
 &nbsp;
 
 
-## Performance Comparison
+## 📊 Performance Comparison
 
 Deserialization is blazingly fast, almost on a par with the binary serializer.
 
@@ -136,7 +136,7 @@ WarmupCount=3
 
 
 
-# Quick Start
+# ⚡ Quick Start
 
 ```csharp
 using Jsonable;
@@ -189,7 +189,7 @@ partial void OnDidDeserialize();
 
 
 
-# Supported Types
+# 💯 Supported Types
 
 ## Collection Type Handling
 
