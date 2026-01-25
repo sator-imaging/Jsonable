@@ -2,7 +2,11 @@
 
 This document outlines the specification for Json with Metadata Comments (JMC), a format that embeds metadata within a JSON structure using comments.
 
-## 1. Object Header
+## 1. Formatting
+
+The JMC format does not support "prettified" JSON. Newlines, indentation, and other whitespace used for formatting are not allowed. The examples in this document may include newlines and indentation for readability, but these are not part of the JMC specification. The entire JMC output must be a single line of text without any extraneous whitespace.
+
+## 2. Object Header
 
 A JMC object is identified by a specific header prepended to the JSON object.
 
@@ -17,7 +21,7 @@ A JMC object is identified by a specific header prepended to the JSON object.
 }
 ```
 
-## 2. Length Metadata
+## 3. Length Metadata
 
 Length metadata is prepended to arrays and strings (including property keys) to indicate the byte length of the element.
 
@@ -43,7 +47,3 @@ Length metadata is prepended to arrays and strings (including property keys) to 
   /*\x2c\x01*/"my_key": /*\x35\x01*/"hello"
 }
 ```
-
-## 3. Formatting
-
-The JMC format does not support "prettified" JSON. Newlines, indentation, and other whitespace used for formatting are not allowed. The examples in this document may include newlines and indentation for readability, but these are not part of the JMC specification. The entire JMC output must be a single line of text without any extraneous whitespace.
