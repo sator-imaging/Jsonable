@@ -15,7 +15,7 @@ A JMC object is identified by a specific header prepended to the JSON object.
 
 ### Example:
 
-```json
+```jsonc
 /*JMC1*/{
   "key": "value"
 }
@@ -42,7 +42,7 @@ Length metadata is prepended to arrays and strings (including property keys) to 
 - In little-endian format, this is `35 01`.
 - The resulting metadata comment would be `/*\x35\x01*/`.
 
-```json
+```jsonc
 {
   /*\x2c\x01*/"my_key": /*\x35\x01*/"hello"
 }
