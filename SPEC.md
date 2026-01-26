@@ -41,6 +41,7 @@ Length metadata is prepended to arrays and strings (including property keys) to 
 - The encoded length would be `5 + 0x0130 = 0x0135`.
 - In little-endian format, this is `35 01`.
 - The resulting metadata comment would be `/*\x35\x01*/`.
+    - *NOTE*: The following example uses code point format instead of actual representation. Resulting JMC file may contain unspeakable characters except for `\0`.
 
 ```jsonc
 {
