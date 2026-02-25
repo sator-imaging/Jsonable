@@ -16,6 +16,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 #nullable enable
@@ -160,43 +161,40 @@ namespace Jsonable
 
         #region   Escape/Unescape string
 
-        volatile static WeakReference<StringBuilder>? interlock_sb;
+        private static class RegexCache
+        {
+            public static readonly Regex Escape = new(@"[""\\\n\r\t]", RegexOptions.Compiled);
+            public static readonly Regex Unescape = new(@"\\[""\\ntr]", RegexOptions.Compiled);
+        }
+
+        private static readonly MatchEvaluator EscapeEvaluator = m => m.Value[0] switch
+        {
+            '\\' => @"\\",
+            '"' => @"\""",
+            '\n' => @"\n",
+            '\r' => @"\r",
+            '\t' => @"\t",
+            _ => m.Value,
+        };
+
+        private static readonly MatchEvaluator UnescapeEvaluator = m => m.Value switch
+        {
+            @"\\" => "\\",
+            @"\""" => "\"",
+            @"\n" => "\n",
+            @"\r" => "\r",
+            @"\t" => "\t",
+            _ => m.Value,
+        };
 
         public static string EscapeStringIfRequired(string value)
         {
-            // TODO: SIMD --> detect char code lower than or equal to 0x2F (control chars) and also \ and "
-            int replaceStartIndex = value.IndexOfAny(EscapeTargets);
-            if (replaceStartIndex < 0)
+            if (value.IndexOfAny(EscapeTargets) < 0)
             {
                 return value;
             }
 
-            var weakRef = Interlocked.Exchange(ref interlock_sb, null);
-            if (weakRef == null || !weakRef.TryGetTarget(out var sb))  // don't simplify by using weakRef?.TryGetTarget (fix for Unity)
-            {
-                sb = new(capacity: value.Length * 2);
-            }
-
-            // NOTE: do not sanitize string here.
-            //       invalid string issue must be addressed outside of this library.
-            sb.Append(value);
-
-            // NOTE: replace order is important!
-            sb.Replace("\\", @"\\", replaceStartIndex, sb.Length - replaceStartIndex);   // backslash
-            sb.Replace("\"", @"\""", replaceStartIndex, sb.Length - replaceStartIndex);  // then quote
-            sb.Replace("\n", @"\n", replaceStartIndex, sb.Length - replaceStartIndex);   // and control chars
-            sb.Replace("\t", @"\t", replaceStartIndex, sb.Length - replaceStartIndex);
-            sb.Replace("\r", @"\r", replaceStartIndex, sb.Length - replaceStartIndex);
-
-            var result = sb.ToString();
-            sb.Length = 0;
-
-            weakRef ??= new(sb);
-            weakRef.SetTarget(sb);
-
-            Interlocked.Exchange(ref interlock_sb, weakRef);
-
-            return result;
+            return RegexCache.Escape.Replace(value, EscapeEvaluator);
         }
 
 #if __supported
@@ -209,49 +207,12 @@ namespace Jsonable
 
             var value = Encoder.GetString(utf8);
 
-            // checking utf8 bytes is faster, but index is required for efficient replacement.
-            int replaceStartIndex = value.IndexOf('\\');
-            if (replaceStartIndex < 0)
+            if (value.IndexOf('\\') < 0)
             {
                 return value;
             }
 
-            var weakRef = Interlocked.Exchange(ref interlock_sb, null);
-            if (weakRef == null || !weakRef.TryGetTarget(out var sb))  // don't simplify by using weakRef?.TryGetTarget (fix for Unity)
-            {
-                sb = new(capacity: value.Length);
-            }
-
-            // NOTE: do not sanitize string here.
-            //       invalid string issue must be addressed outside of this library.
-            // TODO: avoid allocating new string instance
-            sb.Append(value);
-
-            // NOTE: unescape shortens the text length, so index should be sticked to the end.
-            int lengthToEnd = sb.Length - replaceStartIndex;
-
-            // NOTE: replace order is important!
-            sb.Replace(@"\\", "\uFFFF", sb.Length - lengthToEnd, lengthToEnd);  // replace double \ to temp char first
-            lengthToEnd = Math.Max(0, sb.Length - replaceStartIndex);
-            sb.Replace(@"\n", "\n", sb.Length - lengthToEnd, lengthToEnd);
-            lengthToEnd = Math.Max(0, sb.Length - replaceStartIndex);
-            sb.Replace(@"\t", "\t", sb.Length - lengthToEnd, lengthToEnd);
-            lengthToEnd = Math.Max(0, sb.Length - replaceStartIndex);
-            sb.Replace(@"\r", "\r", sb.Length - lengthToEnd, lengthToEnd);      // control chars
-            lengthToEnd = Math.Max(0, sb.Length - replaceStartIndex);
-            sb.Replace(@"\""", "\"", sb.Length - lengthToEnd, lengthToEnd);     // then quote
-            lengthToEnd = Math.Max(0, sb.Length - replaceStartIndex);
-            sb.Replace("\uFFFF", "\\", sb.Length - lengthToEnd, lengthToEnd);   // finally replace temp char to backslash
-
-            var result = sb.ToString();
-            sb.Length = 0;
-
-            weakRef ??= new(sb);
-            weakRef.SetTarget(sb);
-
-            Interlocked.Exchange(ref interlock_sb, weakRef);
-
-            return result;
+            return RegexCache.Unescape.Replace(value, UnescapeEvaluator);
         }
 #endif
 
