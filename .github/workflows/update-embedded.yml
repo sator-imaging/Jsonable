@@ -39,5 +39,5 @@ jobs:
           echo "No changes to commit"
         else
           git commit -m "[bot] Update embedded resources" || echo "Commit failed or nothing to commit"
-          git push origin HEAD:${{ github.ref_name }}
+          git push origin
         fi
