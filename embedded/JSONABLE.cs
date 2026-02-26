@@ -171,43 +171,48 @@ namespace Jsonable
                 return value;
             }
 
-            var weakRef = Interlocked.Exchange(ref interlock_sb, null);
-            if (weakRef == null || !weakRef.TryGetTarget(out var sb))  // don't simplify by using weakRef?.TryGetTarget (fix for Unity)
-            {
-                sb = new(capacity: value.Length * 2);
-            }
+            return SlowPath(value, firstIndex);
 
-            int lastIndex = 0;
-            int currentIndex = firstIndex;
-            while (currentIndex >= 0)
+            static string SlowPath(string value, int firstIndex)
             {
-                sb.Append(value, lastIndex, currentIndex - lastIndex);
-                switch (value[currentIndex])
+                var weakRef = Interlocked.Exchange(ref interlock_sb, null);
+                if (weakRef == null || !weakRef.TryGetTarget(out var sb))  // don't simplify by using weakRef?.TryGetTarget (fix for Unity)
                 {
-                    case '\\': sb.Append(@"\\"); break;
-                    case '"': sb.Append(@"\"""); break;
-                    case '\n': sb.Append(@"\n"); break;
-                    case '\t': sb.Append(@"\t"); break;
-                    case '\r': sb.Append(@"\r"); break;
+                    sb = new(capacity: value.Length * 2);
                 }
-                lastIndex = currentIndex + 1;
-                currentIndex = (lastIndex < value.Length) ? value.IndexOfAny(EscapeTargets, lastIndex) : -1;
+
+                int lastIndex = 0;
+                int currentIndex = firstIndex;
+                while (currentIndex >= 0)
+                {
+                    sb.Append(value, lastIndex, currentIndex - lastIndex);
+                    switch (value[currentIndex])
+                    {
+                        case '\\': sb.Append(@"\\"); break;
+                        case '"': sb.Append(@"\"""); break;
+                        case '\n': sb.Append(@"\n"); break;
+                        case '\t': sb.Append(@"\t"); break;
+                        case '\r': sb.Append(@"\r"); break;
+                    }
+                    lastIndex = currentIndex + 1;
+                    currentIndex = (lastIndex < value.Length) ? value.IndexOfAny(EscapeTargets, lastIndex) : -1;
+                }
+
+                if (lastIndex < value.Length)
+                {
+                    sb.Append(value, lastIndex, value.Length - lastIndex);
+                }
+
+                var result = sb.ToString();
+                sb.Length = 0;
+
+                weakRef ??= new(sb);
+                weakRef.SetTarget(sb);
+
+                Interlocked.Exchange(ref interlock_sb, weakRef);
+
+                return result;
             }
-
-            if (lastIndex < value.Length)
-            {
-                sb.Append(value, lastIndex, value.Length - lastIndex);
-            }
-
-            var result = sb.ToString();
-            sb.Length = 0;
-
-            weakRef ??= new(sb);
-            weakRef.SetTarget(sb);
-
-            Interlocked.Exchange(ref interlock_sb, weakRef);
-
-            return result;
         }
 
 #if __supported
@@ -224,57 +229,62 @@ namespace Jsonable
                 return Encoder.GetString(utf8);
             }
 
-            var value = Encoder.GetString(utf8);
+            return SlowPath(utf8);
 
-            var weakRef = Interlocked.Exchange(ref interlock_sb, null);
-            if (weakRef == null || !weakRef.TryGetTarget(out var sb))  // don't simplify by using weakRef?.TryGetTarget (fix for Unity)
+            static string SlowPath(ReadOnlySpan<byte> utf8)
             {
-                sb = new(capacity: value.Length);
-            }
+                var value = Encoder.GetString(utf8);
 
-            int lastIndex = 0;
-            int currentIndex = value.IndexOf('\\');
-            while (currentIndex >= 0)
-            {
-                sb.Append(value, lastIndex, currentIndex - lastIndex);
-                if (currentIndex + 1 < value.Length)
+                var weakRef = Interlocked.Exchange(ref interlock_sb, null);
+                if (weakRef == null || !weakRef.TryGetTarget(out var sb))  // don't simplify by using weakRef?.TryGetTarget (fix for Unity)
                 {
-                    char next = value[currentIndex + 1];
-                    switch (next)
+                    sb = new(capacity: value.Length);
+                }
+
+                int lastIndex = 0;
+                int currentIndex = value.IndexOf('\\');
+                while (currentIndex >= 0)
+                {
+                    sb.Append(value, lastIndex, currentIndex - lastIndex);
+                    if (currentIndex + 1 < value.Length)
                     {
-                        case '\\': sb.Append('\\'); lastIndex = currentIndex + 2; break;
-                        case '"': sb.Append('"'); lastIndex = currentIndex + 2; break;
-                        case 'n': sb.Append('\n'); lastIndex = currentIndex + 2; break;
-                        case 't': sb.Append('\t'); lastIndex = currentIndex + 2; break;
-                        case 'r': sb.Append('\r'); lastIndex = currentIndex + 2; break;
-                        default:
-                            sb.Append('\\');
-                            lastIndex = currentIndex + 1;
-                            break;
+                        char next = value[currentIndex + 1];
+                        switch (next)
+                        {
+                            case '\\': sb.Append('\\'); lastIndex = currentIndex + 2; break;
+                            case '"': sb.Append('"'); lastIndex = currentIndex + 2; break;
+                            case 'n': sb.Append('\n'); lastIndex = currentIndex + 2; break;
+                            case 't': sb.Append('\t'); lastIndex = currentIndex + 2; break;
+                            case 'r': sb.Append('\r'); lastIndex = currentIndex + 2; break;
+                            default:
+                                sb.Append('\\');
+                                lastIndex = currentIndex + 1;
+                                break;
+                        }
                     }
+                    else
+                    {
+                        sb.Append('\\');
+                        lastIndex = currentIndex + 1;
+                    }
+                    currentIndex = (lastIndex < value.Length) ? value.IndexOf('\\', lastIndex) : -1;
                 }
-                else
+
+                if (lastIndex < value.Length)
                 {
-                    sb.Append('\\');
-                    lastIndex = currentIndex + 1;
+                    sb.Append(value, lastIndex, value.Length - lastIndex);
                 }
-                currentIndex = (lastIndex < value.Length) ? value.IndexOf('\\', lastIndex) : -1;
+
+                var result = sb.ToString();
+                sb.Length = 0;
+
+                weakRef ??= new(sb);
+                weakRef.SetTarget(sb);
+
+                Interlocked.Exchange(ref interlock_sb, weakRef);
+
+                return result;
             }
-
-            if (lastIndex < value.Length)
-            {
-                sb.Append(value, lastIndex, value.Length - lastIndex);
-            }
-
-            var result = sb.ToString();
-            sb.Length = 0;
-
-            weakRef ??= new(sb);
-            weakRef.SetTarget(sb);
-
-            Interlocked.Exchange(ref interlock_sb, weakRef);
-
-            return result;
         }
 #endif
 
