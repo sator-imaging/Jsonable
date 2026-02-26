@@ -6,7 +6,7 @@
 
 [![Jsonable](https://img.shields.io/nuget/vpre/SatorImaging.Jsonable?label=Jsonable)](https://www.nuget.org/packages/SatorImaging.Jsonable)
 [![Assertions](https://img.shields.io/nuget/vpre/SatorImaging.Jsonable.Assertions?label=Assertions)](https://www.nuget.org/packages/SatorImaging.Jsonable.Assertions)
-[![build](https://github.com/sator-imaging/Jsonable/actions/workflows/build.yml/badge.svg)](https://github.com/sator-imaging/Jsonable/actions/workflows/build.yml)
+[![Test](https://github.com/sator-imaging/Jsonable/actions/workflows/test.yml/badge.svg)](https://github.com/sator-imaging/Jsonable/actions/workflows/test.yml)
 &nbsp;
 [![DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/sator-imaging/Jsonable)
 

@@ -13,9 +13,10 @@ jobs:
     strategy:
       matrix:
         configuration: [Debug, Release]
+        pretty-print: ["", "--pretty-print"]
 
         # net6.0 for Unity compatibility tests
-        framework: [net9.0, net6.0]
+        framework: [net10.0, net6.0]
 
     runs-on: ubuntu-latest
 
@@ -34,10 +35,8 @@ jobs:
 
     - name: Embed resources
       run: |
-        dotnet run --project ./embedded  -f net8.0 -- --force --quiet
+        dotnet run --project ./embedded  -f net10.0 -- --force --quiet
 
-    - name: Build
+    - name: Test
       run: |
-        # run tests
-        dotnet run --project ./tests  -c ${{ matrix.configuration }}  -f ${{ matrix.framework }}
-        dotnet run --project ./tests  -c ${{ matrix.configuration }}  -f ${{ matrix.framework }}  -- --pretty-print
+        dotnet run --project ./tests  -c ${{ matrix.configuration }}  -f ${{ matrix.framework }}  -- ${{ matrix.pretty-print }}

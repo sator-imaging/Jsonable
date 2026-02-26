@@ -165,8 +165,8 @@ namespace Jsonable
         public static string EscapeStringIfRequired(string value)
         {
             // TODO: SIMD --> detect char code lower than or equal to 0x2F (control chars) and also \ and "
-            int replaceStartIndex = value.IndexOfAny(EscapeTargets);
-            if (replaceStartIndex < 0)
+            int firstIndex = value.IndexOfAny(EscapeTargets);
+            if (firstIndex < 0)
             {
                 return value;
             }
@@ -177,16 +177,27 @@ namespace Jsonable
                 sb = new(capacity: value.Length * 2);
             }
 
-            // NOTE: do not sanitize string here.
-            //       invalid string issue must be addressed outside of this library.
-            sb.Append(value);
+            int lastIndex = 0;
+            int currentIndex = firstIndex;
+            while (currentIndex >= 0)
+            {
+                sb.Append(value, lastIndex, currentIndex - lastIndex);
+                switch (value[currentIndex])
+                {
+                    case '\\': sb.Append(@"\\"); break;
+                    case '"': sb.Append(@"\"""); break;
+                    case '\n': sb.Append(@"\n"); break;
+                    case '\t': sb.Append(@"\t"); break;
+                    case '\r': sb.Append(@"\r"); break;
+                }
+                lastIndex = currentIndex + 1;
+                currentIndex = (lastIndex < value.Length) ? value.IndexOfAny(EscapeTargets, lastIndex) : -1;
+            }
 
-            // NOTE: replace order is important!
-            sb.Replace("\\", @"\\", replaceStartIndex, sb.Length - replaceStartIndex);   // backslash
-            sb.Replace("\"", @"\""", replaceStartIndex, sb.Length - replaceStartIndex);  // then quote
-            sb.Replace("\n", @"\n", replaceStartIndex, sb.Length - replaceStartIndex);   // and control chars
-            sb.Replace("\t", @"\t", replaceStartIndex, sb.Length - replaceStartIndex);
-            sb.Replace("\r", @"\r", replaceStartIndex, sb.Length - replaceStartIndex);
+            if (lastIndex < value.Length)
+            {
+                sb.Append(value, lastIndex, value.Length - lastIndex);
+            }
 
             var result = sb.ToString();
             sb.Length = 0;
@@ -207,14 +218,13 @@ namespace Jsonable
                 return string.Empty;
             }
 
-            var value = Encoder.GetString(utf8);
-
-            // checking utf8 bytes is faster, but index is required for efficient replacement.
-            int replaceStartIndex = value.IndexOf('\\');
-            if (replaceStartIndex < 0)
+            // checking utf8 bytes is faster
+            if (utf8.IndexOf((byte)'\\') < 0)
             {
-                return value;
+                return Encoder.GetString(utf8);
             }
+
+            var value = Encoder.GetString(utf8);
 
             var weakRef = Interlocked.Exchange(ref interlock_sb, null);
             if (weakRef == null || !weakRef.TryGetTarget(out var sb))  // don't simplify by using weakRef?.TryGetTarget (fix for Unity)
@@ -222,26 +232,39 @@ namespace Jsonable
                 sb = new(capacity: value.Length);
             }
 
-            // NOTE: do not sanitize string here.
-            //       invalid string issue must be addressed outside of this library.
-            // TODO: avoid allocating new string instance
-            sb.Append(value);
+            int lastIndex = 0;
+            int currentIndex = value.IndexOf('\\');
+            while (currentIndex >= 0)
+            {
+                sb.Append(value, lastIndex, currentIndex - lastIndex);
+                if (currentIndex + 1 < value.Length)
+                {
+                    char next = value[currentIndex + 1];
+                    switch (next)
+                    {
+                        case '\\': sb.Append('\\'); lastIndex = currentIndex + 2; break;
+                        case '"': sb.Append('"'); lastIndex = currentIndex + 2; break;
+                        case 'n': sb.Append('\n'); lastIndex = currentIndex + 2; break;
+                        case 't': sb.Append('\t'); lastIndex = currentIndex + 2; break;
+                        case 'r': sb.Append('\r'); lastIndex = currentIndex + 2; break;
+                        default:
+                            sb.Append('\\');
+                            lastIndex = currentIndex + 1;
+                            break;
+                    }
+                }
+                else
+                {
+                    sb.Append('\\');
+                    lastIndex = currentIndex + 1;
+                }
+                currentIndex = (lastIndex < value.Length) ? value.IndexOf('\\', lastIndex) : -1;
+            }
 
-            // NOTE: unescape shortens the text length, so index should be sticked to the end.
-            int lengthToEnd = sb.Length - replaceStartIndex;
-
-            // NOTE: replace order is important!
-            sb.Replace(@"\\", "\uFFFF", sb.Length - lengthToEnd, lengthToEnd);  // replace double \ to temp char first
-            lengthToEnd = Math.Max(0, sb.Length - replaceStartIndex);
-            sb.Replace(@"\n", "\n", sb.Length - lengthToEnd, lengthToEnd);
-            lengthToEnd = Math.Max(0, sb.Length - replaceStartIndex);
-            sb.Replace(@"\t", "\t", sb.Length - lengthToEnd, lengthToEnd);
-            lengthToEnd = Math.Max(0, sb.Length - replaceStartIndex);
-            sb.Replace(@"\r", "\r", sb.Length - lengthToEnd, lengthToEnd);      // control chars
-            lengthToEnd = Math.Max(0, sb.Length - replaceStartIndex);
-            sb.Replace(@"\""", "\"", sb.Length - lengthToEnd, lengthToEnd);     // then quote
-            lengthToEnd = Math.Max(0, sb.Length - replaceStartIndex);
-            sb.Replace("\uFFFF", "\\", sb.Length - lengthToEnd, lengthToEnd);   // finally replace temp char to backslash
+            if (lastIndex < value.Length)
+            {
+                sb.Append(value, lastIndex, value.Length - lastIndex);
+            }
 
             var result = sb.ToString();
             sb.Length = 0;

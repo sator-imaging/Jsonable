@@ -22,7 +22,7 @@ jobs:
 
     - name: Embed resources
       run: |
-        dotnet run --project ./embedded  -f net8.0 -- --force --quiet
+        dotnet run --project ./embedded  -f net10.0 -- --force --quiet
 
     - name: Pack (release)
       run: |
@@ -38,7 +38,7 @@ jobs:
 
     - name: Test (release)
       run: |
-        dotnet run --project ./tests  -f net9.0 -c Release
+        dotnet run --project ./tests  -f net10.0 -c Release
 
     ################################
     #  NUGET

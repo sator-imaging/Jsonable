@@ -34,7 +34,7 @@ jobs:
 
     - name: Embed resources
       run: |
-        dotnet run --project ./embedded  -f net8.0 -- --force --quiet
+        dotnet run --project ./embedded  -f net10.0 -- --force --quiet
 
     - name: Run benchmark
       run: |
