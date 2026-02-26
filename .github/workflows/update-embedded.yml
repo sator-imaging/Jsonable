@@ -1,0 +1,52 @@
+name: Update Embedded Resources
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          10.x.x
+
+    - name: Embed resources
+      run: |
+        dotnet run --project ./embedded  -f net10.0 -- --force --quiet
+
+    - name: Upload (bot)
+      run: |
+        # Configure git to use the GitHub Actions bot identity and push any changes
+        git config user.name  "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add -A
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "[bot] Update embedded resources" || echo "Commit failed or nothing to commit"
+          # Determine target branch: for pull_request use GITHUB_HEAD_REF, otherwise use the checked-out ref
+          if [ -n "$GITHUB_HEAD_REF" ]; then
+            TARGET_BRANCH="$GITHUB_HEAD_REF"
+          else
+            TARGET_BRANCH="${GITHUB_REF#refs/heads/}"
+          fi
+          echo "Pushing to branch: ${TARGET_BRANCH}"
+          # Ensure a local branch exists for the current HEAD, then push and set upstream
+          git checkout -B "${TARGET_BRANCH}"
+          git push -u origin "${TARGET_BRANCH}"
+        fi
