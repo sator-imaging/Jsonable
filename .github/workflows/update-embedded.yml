@@ -39,5 +39,14 @@ jobs:
           echo "No changes to commit"
         else
           git commit -m "[bot] Update embedded resources" || echo "Commit failed or nothing to commit"
-          git push origin
+          # Determine target branch: for pull_request use GITHUB_HEAD_REF, otherwise use the checked-out ref
+          if [ -n "$GITHUB_HEAD_REF" ]; then
+            TARGET_BRANCH="$GITHUB_HEAD_REF"
+          else
+            TARGET_BRANCH="${GITHUB_REF#refs/heads/}"
+          fi
+          echo "Pushing to branch: ${TARGET_BRANCH}"
+          # Ensure a local branch exists for the current HEAD, then push and set upstream
+          git checkout -B "${TARGET_BRANCH}"
+          git push -u origin "${TARGET_BRANCH}"
         fi
