@@ -850,8 +850,8 @@ namespace Jsonable
 
         private static class RegexCache
         {
-            public static readonly Regex Escape = new(@""[""""\\\n\r\t]"", RegexOptions.Compiled);
-            public static readonly Regex Unescape = new(@""\\[""""\\ntr]"", RegexOptions.Compiled);
+            public static readonly Regex Escape = new(@""[""""\\\n\r\t]"", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+            public static readonly Regex Unescape = new(@""\\[""""\\ntr]"", RegexOptions.Compiled | RegexOptions.CultureInvariant);
         }
 
         private static readonly MatchEvaluator EscapeEvaluator = m => m.Value[0] switch
