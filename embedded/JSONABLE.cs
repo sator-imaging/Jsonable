@@ -172,7 +172,7 @@ namespace Jsonable
             }
 
 #if __supported
-            if (value.Length <= 128)
+            if (value.Length <= 128) // 128 bytes (in UTF-16, this is 64 chars, but using 128 chars threshold as requested)
             {
                 return ShortSlowPath(value, firstIndex);
             }
@@ -274,7 +274,7 @@ namespace Jsonable
             }
 
 #if __supported
-            if (utf8.Length <= 256)
+            if (utf8.Length <= 256) // 256 bytes
             {
                 return ShortSlowPath(utf8);
             }
