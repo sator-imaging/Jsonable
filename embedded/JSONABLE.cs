@@ -162,18 +162,7 @@ namespace Jsonable
 
         volatile static WeakReference<StringBuilder>? interlock_sb;
 
-        public static string EscapeStringIfRequired(string value)
-        {
-            // TODO: SIMD --> detect char code lower than or equal to 0x2F (control chars) and also \ and "
-            int firstIndex = value.IndexOfAny(EscapeTargets);
-            if (firstIndex < 0)
-            {
-                return value;
-            }
-
-            return SlowPath(value, firstIndex);
-
-            static string SlowPath(string value, int firstIndex)
+        static string SlowPath(string value, int firstIndex)
             {
                 var weakRef = Interlocked.Exchange(ref interlock_sb, null);
                 if (weakRef == null || !weakRef.TryGetTarget(out var sb))  // don't simplify by using weakRef?.TryGetTarget (fix for Unity)
@@ -213,25 +202,134 @@ namespace Jsonable
 
                 return result;
             }
+
+        public static string EscapeStringIfRequired(string value)
+        {
+            // TODO: SIMD --> detect char code lower than or equal to 0x2F (control chars) and also \ and "
+            int firstIndex = value.IndexOfAny(EscapeTargets);
+            if (firstIndex < 0)
+            {
+                return value;
+            }
+
+#if __supported
+            if (value.Length <= 128)
+            {
+                return ShortSlowPath(value.AsSpan(), firstIndex);
+            }
+#endif
+
+            return SlowPath(value, firstIndex);
         }
 
 #if __supported
-        public static string UnescapeStringIfRequired(ReadOnlySpan<byte> utf8)  // for .NET Standard 2.0; Encoding doesn't have span overload
+        public static string EscapeStringIfRequired(ReadOnlySpan<char> value)
         {
-            if (utf8.Length == 0)
+            int firstIndex = value.IndexOfAny(EscapeTargets);
+            if (firstIndex < 0)
             {
-                return string.Empty;
+                return value.ToString();
             }
 
-            // checking utf8 bytes is faster
-            if (utf8.IndexOf((byte)'\\') < 0)
+            if (value.Length <= 128)
             {
-                return Encoder.GetString(utf8);
+                return ShortSlowPath(value, firstIndex);
             }
 
-            return SlowPath(utf8);
+            return SlowPath(value.ToString(), firstIndex);
+        }
 
-            static string SlowPath(ReadOnlySpan<byte> utf8)
+        static string ShortSlowPath(ReadOnlySpan<char> value, int firstIndex)
+        {
+            Span<char> buffer = stackalloc char[value.Length << 1];
+            int bufferIndex = 0;
+            int lastIndex = 0;
+            int currentIndex = firstIndex;
+
+            while (currentIndex >= 0)
+            {
+                int length = currentIndex - lastIndex;
+                if (length > 0)
+                {
+                    value.Slice(lastIndex, length).CopyTo(buffer.Slice(bufferIndex));
+                    bufferIndex += length;
+                }
+
+                switch (value[currentIndex])
+                {
+                    case '\\': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = '\\'; break;
+                    case '"': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = '"'; break;
+                    case '\n': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = 'n'; break;
+                    case '\t': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = 't'; break;
+                    case '\r': buffer[bufferIndex++] = '\\'; buffer[bufferIndex++] = 'r'; break;
+                }
+                lastIndex = currentIndex + 1;
+                currentIndex = (lastIndex < value.Length) ? value.Slice(lastIndex).IndexOfAny(EscapeTargets) : -1;
+                if (currentIndex >= 0) currentIndex += lastIndex;
+            }
+
+            if (lastIndex < value.Length)
+            {
+                int length = value.Length - lastIndex;
+                value.Slice(lastIndex, length).CopyTo(buffer.Slice(bufferIndex));
+                bufferIndex += length;
+            }
+
+            return buffer.Slice(0, bufferIndex).ToString();
+        }
+
+        static string ShortSlowPath(ReadOnlySpan<byte> utf8, int firstIndex)
+        {
+            Span<byte> buffer = stackalloc byte[utf8.Length];
+            int bufferIndex = 0;
+            int lastIndex = 0;
+            int currentIndex = firstIndex;
+
+            while (currentIndex >= 0)
+            {
+                int length = currentIndex - lastIndex;
+                if (length > 0)
+                {
+                    utf8.Slice(lastIndex, length).CopyTo(buffer.Slice(bufferIndex));
+                    bufferIndex += length;
+                }
+
+                if (currentIndex + 1 < utf8.Length)
+                {
+                    byte next = utf8[currentIndex + 1];
+                    switch (next)
+                    {
+                        case (byte)'\\': buffer[bufferIndex++] = (byte)'\\'; lastIndex = currentIndex + 2; break;
+                        case (byte)'"': buffer[bufferIndex++] = (byte)'"'; lastIndex = currentIndex + 2; break;
+                        case (byte)'n': buffer[bufferIndex++] = (byte)'\n'; lastIndex = currentIndex + 2; break;
+                        case (byte)'t': buffer[bufferIndex++] = (byte)'\t'; lastIndex = currentIndex + 2; break;
+                        case (byte)'r': buffer[bufferIndex++] = (byte)'\r'; lastIndex = currentIndex + 2; break;
+                        default:
+                            buffer[bufferIndex++] = (byte)'\\';
+                            lastIndex = currentIndex + 1;
+                            break;
+                    }
+                }
+                else
+                {
+                    buffer[bufferIndex++] = (byte)'\\';
+                    lastIndex = currentIndex + 1;
+                }
+                currentIndex = (lastIndex < utf8.Length) ? utf8.Slice(lastIndex).IndexOf((byte)'\\') : -1;
+                if (currentIndex >= 0) currentIndex += lastIndex;
+            }
+
+            if (lastIndex < utf8.Length)
+            {
+                int length = utf8.Length - lastIndex;
+                utf8.Slice(lastIndex, length).CopyTo(buffer.Slice(bufferIndex));
+                bufferIndex += length;
+            }
+
+            return Encoder.GetString(buffer.Slice(0, bufferIndex));
+        }
+
+        static string SlowPath(ReadOnlySpan<byte> utf8, int firstByteIndex)
             {
                 var value = Encoder.GetString(utf8);
 
@@ -242,7 +340,7 @@ namespace Jsonable
                 }
 
                 int lastIndex = 0;
-                int currentIndex = value.IndexOf('\\');
+                int currentIndex = Encoder.GetCharCount(utf8.Slice(0, firstByteIndex));
                 while (currentIndex >= 0)
                 {
                     sb.Append(value, lastIndex, currentIndex - lastIndex);
@@ -285,6 +383,27 @@ namespace Jsonable
 
                 return result;
             }
+
+        public static string UnescapeStringIfRequired(ReadOnlySpan<byte> utf8)  // for .NET Standard 2.0; Encoding doesn't have span overload
+        {
+            if (utf8.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            // checking utf8 bytes is faster
+            int firstIndex = utf8.IndexOf((byte)'\\');
+            if (firstIndex < 0)
+            {
+                return Encoder.GetString(utf8);
+            }
+
+            if (utf8.Length <= 256)
+            {
+                return ShortSlowPath(utf8, firstIndex);
+            }
+
+            return SlowPath(utf8, firstIndex);
         }
 #endif
 
