@@ -294,7 +294,7 @@ namespace Jsonable
             static string ShortSlowPath(ReadOnlySpan<byte> utf8)
             {
                 var value = Encoder.GetString(utf8);
-                Span<char> buffer = stackalloc char[128]; // 256 bytes
+                Span<char> buffer = stackalloc char[value.Length];
                 int written = 0;
 
                 int lastIndex = 0;
