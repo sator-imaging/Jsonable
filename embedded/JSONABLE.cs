@@ -172,7 +172,7 @@ namespace Jsonable
             }
 
 #if __supported
-            if (value.Length <= 128) // 128 bytes (in UTF-16, this is 64 chars, but using 128 chars threshold as requested)
+            if (value.Length <= 64) // 128 bytes
             {
                 return ShortSlowPath(value, firstIndex);
             }
@@ -183,7 +183,7 @@ namespace Jsonable
 #if __supported
             static string ShortSlowPath(string value, int firstIndex)
             {
-                Span<char> buffer = stackalloc char[256];
+                Span<char> buffer = stackalloc char[128]; // 256 bytes
                 int written = 0;
 
                 int lastIndex = 0;
@@ -274,7 +274,7 @@ namespace Jsonable
             }
 
 #if __supported
-            if (utf8.Length <= 256) // 256 bytes
+            if (utf8.Length <= 128) // 128 bytes
             {
                 return ShortSlowPath(utf8);
             }
@@ -286,7 +286,7 @@ namespace Jsonable
             static string ShortSlowPath(ReadOnlySpan<byte> utf8)
             {
                 var value = Encoder.GetString(utf8);
-                Span<char> buffer = stackalloc char[value.Length];
+                Span<char> buffer = stackalloc char[128]; // 256 bytes
                 int written = 0;
 
                 int lastIndex = 0;
