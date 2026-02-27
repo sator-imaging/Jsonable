@@ -181,7 +181,7 @@ namespace Jsonable
             return SlowPath(value, firstIndex);
 
 #if __supported
-            static string ShortSlowPath(string value, int firstIndex)
+            static string ShortSlowPath(ReadOnlySpan<char> value, int firstIndex)
             {
                 Span<char> buffer = stackalloc char[128]; // 256 bytes
                 int written = 0;
@@ -191,7 +191,7 @@ namespace Jsonable
                 while (currentIndex >= 0)
                 {
                     int len = currentIndex - lastIndex;
-                    value.AsSpan(lastIndex, len).CopyTo(buffer.Slice(written));
+                    value.Slice(lastIndex, len).CopyTo(buffer.Slice(written));
                     written += len;
 
                     switch (value[currentIndex])
@@ -209,7 +209,7 @@ namespace Jsonable
                 if (lastIndex < value.Length)
                 {
                     int len = value.Length - lastIndex;
-                    value.AsSpan(lastIndex, len).CopyTo(buffer.Slice(written));
+                    value.Slice(lastIndex, len).CopyTo(buffer.Slice(written));
                     written += len;
                 }
 
