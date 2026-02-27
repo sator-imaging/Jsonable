@@ -92,7 +92,7 @@ namespace Jsonable
 "
             );
 
-            foreach (var (filePath, content) in csFiles.OrderBy(x => x.Key))
+            foreach (var (filePath, content) in csFiles)
             {
                 sb.Append(
 $@"        public const string {Path.GetFileNameWithoutExtension(filePath)}
