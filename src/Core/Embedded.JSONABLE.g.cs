@@ -178,7 +178,59 @@ namespace Jsonable
                 return value;
             }
 
+#if __supported
+            if (value.Length <= 64) // 64 chars threshold. stackalloc 128 chars to accommodate potential doubling of length during escaping.
+            {
+                return ShortSlowPath(value, firstIndex);
+            }
+#endif
+
             return SlowPath(value, firstIndex);
+
+#if __supported
+            static string ShortSlowPath(ReadOnlySpan<char> value, int firstIndex)
+            {
+                Span<char> buffer = stackalloc char[128]; // 256 bytes
+                int written = 0;
+
+                int lastIndex = 0;
+                int currentIndex = firstIndex;
+                while (currentIndex >= 0)
+                {
+                    int len = currentIndex - lastIndex;
+                    value.Slice(lastIndex, len).CopyTo(buffer.Slice(written));
+                    written += len;
+
+                    switch (value[currentIndex])
+                    {
+                        case '\\': buffer[written++] = '\\'; buffer[written++] = '\\'; break;
+                        case '"': buffer[written++] = '\\'; buffer[written++] = '"'; break;
+                        case '\n': buffer[written++] = '\\'; buffer[written++] = 'n'; break;
+                        case '\t': buffer[written++] = '\\'; buffer[written++] = 't'; break;
+                        case '\r': buffer[written++] = '\\'; buffer[written++] = 'r'; break;
+                    }
+                    lastIndex = currentIndex + 1;
+                    if (lastIndex < value.Length)
+                    {
+                        currentIndex = value.Slice(lastIndex).IndexOfAny(EscapeTargets);
+                        if (currentIndex >= 0) currentIndex += lastIndex;
+                    }
+                    else
+                    {
+                        currentIndex = -1;
+                    }
+                }
+
+                if (lastIndex < value.Length)
+                {
+                    int len = value.Length - lastIndex;
+                    value.Slice(lastIndex, len).CopyTo(buffer.Slice(written));
+                    written += len;
+                }
+
+                return new string(buffer.Slice(0, written));
+            }
+#endif
 
             static string SlowPath(string value, int firstIndex)
             {
@@ -236,7 +288,64 @@ namespace Jsonable
                 return Encoder.GetString(utf8);
             }
 
+#if __supported
+            if (utf8.Length <= 128) // 128 bytes threshold. stackalloc 128 chars (256 bytes) as unescaped string length is always less than or equal to utf8 bytes length.
+            {
+                return ShortSlowPath(utf8);
+            }
+#endif
+
             return SlowPath(utf8);
+
+#if __supported
+            static string ShortSlowPath(ReadOnlySpan<byte> utf8)
+            {
+                var value = Encoder.GetString(utf8);
+                Span<char> buffer = stackalloc char[128]; // 256 bytes
+                int written = 0;
+
+                int lastIndex = 0;
+                int currentIndex = value.IndexOf('\\');
+                while (currentIndex >= 0)
+                {
+                    int len = currentIndex - lastIndex;
+                    value.AsSpan(lastIndex, len).CopyTo(buffer.Slice(written));
+                    written += len;
+
+                    if (currentIndex + 1 < value.Length)
+                    {
+                        char next = value[currentIndex + 1];
+                        switch (next)
+                        {
+                            case '\\': buffer[written++] = '\\'; lastIndex = currentIndex + 2; break;
+                            case '"': buffer[written++] = '"'; lastIndex = currentIndex + 2; break;
+                            case 'n': buffer[written++] = '\n'; lastIndex = currentIndex + 2; break;
+                            case 't': buffer[written++] = '\t'; lastIndex = currentIndex + 2; break;
+                            case 'r': buffer[written++] = '\r'; lastIndex = currentIndex + 2; break;
+                            default:
+                                buffer[written++] = '\\';
+                                lastIndex = currentIndex + 1;
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        buffer[written++] = '\\';
+                        lastIndex = currentIndex + 1;
+                    }
+                    currentIndex = (lastIndex < value.Length) ? value.IndexOf('\\', lastIndex) : -1;
+                }
+
+                if (lastIndex < value.Length)
+                {
+                    int len = value.Length - lastIndex;
+                    value.AsSpan(lastIndex, len).CopyTo(buffer.Slice(written));
+                    written += len;
+                }
+
+                return new string(buffer.Slice(0, written));
+            }
+#endif
 
             static string SlowPath(ReadOnlySpan<byte> utf8)
             {
