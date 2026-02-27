@@ -183,7 +183,7 @@ namespace Jsonable
 #if __supported
             static string ShortSlowPath(ReadOnlySpan<char> value, int firstIndex)
             {
-                Span<char> buffer = stackalloc char[128]; // 256 bytes
+                Span<char> buffer = stackalloc char[value.Length << 1];
                 int written = 0;
 
                 int lastIndex = 0;
