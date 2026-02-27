@@ -243,42 +243,6 @@ namespace Jsonable
         }
 
 #if __supported
-        public static string EscapeStringIfRequired(ReadOnlySpan<char> value)
-        {
-            int firstIndex = value.IndexOfAny(EscapeTargets);
-            if (firstIndex < 0)
-            {
-                return value.ToString();
-            }
-
-            if (value.Length <= 128)
-            {
-                return ShortSlowPath(value, firstIndex);
-
-                static string ShortSlowPath(ReadOnlySpan<char> value, int firstIndex)
-                {
-                    Span<char> buffer = stackalloc char[value.Length << 1];
-                    value.Slice(0, firstIndex).CopyTo(buffer);
-                    int written = firstIndex;
-                    for (int i = firstIndex; i < value.Length; i++)
-                    {
-                        switch (value[i])
-                        {
-                            case '\\': buffer[written++] = '\\'; buffer[written++] = '\\'; break;
-                            case '"': buffer[written++] = '\\'; buffer[written++] = '"'; break;
-                            case '\n': buffer[written++] = '\\'; buffer[written++] = 'n'; break;
-                            case '\t': buffer[written++] = '\\'; buffer[written++] = 't'; break;
-                            case '\r': buffer[written++] = '\\'; buffer[written++] = 'r'; break;
-                            default: buffer[written++] = value[i]; break;
-                        }
-                    }
-                    return new string(buffer.Slice(0, written));
-                }
-            }
-
-            return EscapeStringIfRequired(value.ToString());
-        }
-
         public static string UnescapeStringIfRequired(ReadOnlySpan<byte> utf8)  // for .NET Standard 2.0; Encoding doesn't have span overload
         {
             if (utf8.Length == 0)
