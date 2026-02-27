@@ -179,7 +179,7 @@ namespace Jsonable
             }
 
 #if __supported
-            if (value.Length <= 64) // 128 bytes
+            if (value.Length <= 64) // 64 chars threshold. stackalloc 128 chars to accommodate potential doubling of length during escaping.
             {
                 return ShortSlowPath(value, firstIndex);
             }
@@ -188,7 +188,7 @@ namespace Jsonable
             return SlowPath(value, firstIndex);
 
 #if __supported
-            static string ShortSlowPath(string value, int firstIndex)
+            static string ShortSlowPath(ReadOnlySpan<char> value, int firstIndex)
             {
                 Span<char> buffer = stackalloc char[128]; // 256 bytes
                 int written = 0;
@@ -198,7 +198,7 @@ namespace Jsonable
                 while (currentIndex >= 0)
                 {
                     int len = currentIndex - lastIndex;
-                    value.AsSpan(lastIndex, len).CopyTo(buffer.Slice(written));
+                    value.Slice(lastIndex, len).CopyTo(buffer.Slice(written));
                     written += len;
 
                     switch (value[currentIndex])
@@ -210,13 +210,21 @@ namespace Jsonable
                         case '\r': buffer[written++] = '\\'; buffer[written++] = 'r'; break;
                     }
                     lastIndex = currentIndex + 1;
-                    currentIndex = (lastIndex < value.Length) ? value.IndexOfAny(EscapeTargets, lastIndex) : -1;
+                    if (lastIndex < value.Length)
+                    {
+                        currentIndex = value.Slice(lastIndex).IndexOfAny(EscapeTargets);
+                        if (currentIndex >= 0) currentIndex += lastIndex;
+                    }
+                    else
+                    {
+                        currentIndex = -1;
+                    }
                 }
 
                 if (lastIndex < value.Length)
                 {
                     int len = value.Length - lastIndex;
-                    value.AsSpan(lastIndex, len).CopyTo(buffer.Slice(written));
+                    value.Slice(lastIndex, len).CopyTo(buffer.Slice(written));
                     written += len;
                 }
 
@@ -281,7 +289,7 @@ namespace Jsonable
             }
 
 #if __supported
-            if (utf8.Length <= 128) // 128 bytes
+            if (utf8.Length <= 128) // 128 bytes threshold. stackalloc 128 chars (256 bytes) as unescaped string length is always less than or equal to utf8 bytes length.
             {
                 return ShortSlowPath(utf8);
             }
