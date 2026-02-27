@@ -183,7 +183,7 @@ namespace Jsonable
 #if __supported
             static string ShortSlowPath(string value, int firstIndex)
             {
-                Span<char> buffer = stackalloc char[128];
+                Span<char> buffer = stackalloc char[256];
                 int written = 0;
 
                 int lastIndex = 0;
@@ -293,7 +293,7 @@ namespace Jsonable
             static string ShortSlowPath(ReadOnlySpan<byte> utf8)
             {
                 var value = Encoder.GetString(utf8);
-                Span<char> buffer = stackalloc char[128];
+                Span<char> buffer = stackalloc char[256];
                 int written = 0;
 
                 int lastIndex = 0;
