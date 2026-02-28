@@ -186,20 +186,39 @@ namespace Jsonable
                 static string ShortSlowPath(ReadOnlySpan<char> value, int firstIndex)
                 {
                     Span<char> buffer = stackalloc char[value.Length << 1];
-                    value.Slice(0, firstIndex).CopyTo(buffer);
-                    int written = firstIndex;
-                    for (int i = firstIndex; i < value.Length; i++)
+                    int lastIndex = 0;
+                    int currentIndex = firstIndex;
+                    int written = 0;
+                    while (currentIndex >= 0)
                     {
-                        switch (value[i])
+                        int length = currentIndex - lastIndex;
+                        if (length > 0)
+                        {
+                            value.Slice(lastIndex, length).CopyTo(buffer.Slice(written));
+                            written += length;
+                        }
+
+                        switch (value[currentIndex])
                         {
                             case '\\': buffer[written++] = '\\'; buffer[written++] = '\\'; break;
                             case '"': buffer[written++] = '\\'; buffer[written++] = '"'; break;
                             case '\n': buffer[written++] = '\\'; buffer[written++] = 'n'; break;
                             case '\t': buffer[written++] = '\\'; buffer[written++] = 't'; break;
                             case '\r': buffer[written++] = '\\'; buffer[written++] = 'r'; break;
-                            default: buffer[written++] = value[i]; break;
                         }
+
+                        lastIndex = currentIndex + 1;
+                        currentIndex = (lastIndex < value.Length) ? value.Slice(lastIndex).IndexOfAny(EscapeTargets) : -1;
+                        if (currentIndex >= 0) currentIndex += lastIndex;
                     }
+
+                    if (lastIndex < value.Length)
+                    {
+                        int length = value.Length - lastIndex;
+                        value.Slice(lastIndex, length).CopyTo(buffer.Slice(written));
+                        written += length;
+                    }
+
                     return new string(buffer.Slice(0, written));
                 }
             }
@@ -271,27 +290,51 @@ namespace Jsonable
                 static string ShortSlowPath(ReadOnlySpan<byte> utf8, int firstIndex)
                 {
                     Span<byte> buffer = stackalloc byte[utf8.Length];
-                    utf8.Slice(0, firstIndex).CopyTo(buffer);
-                    int written = firstIndex;
-                    for (int i = firstIndex; i < utf8.Length; i++)
+                    int lastIndex = 0;
+                    int currentIndex = firstIndex;
+                    int written = 0;
+                    while (currentIndex >= 0)
                     {
-                        if (utf8[i] == (byte)'\\' && i + 1 < utf8.Length)
+                        int length = currentIndex - lastIndex;
+                        if (length > 0)
                         {
-                            switch (utf8[i + 1])
+                            utf8.Slice(lastIndex, length).CopyTo(buffer.Slice(written));
+                            written += length;
+                        }
+
+                        if (currentIndex + 1 < utf8.Length)
+                        {
+                            byte next = utf8[currentIndex + 1];
+                            switch (next)
                             {
-                                case (byte)'\\': buffer[written++] = (byte)'\\'; i++; break;
-                                case (byte)'"': buffer[written++] = (byte)'"'; i++; break;
-                                case (byte)'n': buffer[written++] = (byte)'\n'; i++; break;
-                                case (byte)'t': buffer[written++] = (byte)'\t'; i++; break;
-                                case (byte)'r': buffer[written++] = (byte)'\r'; i++; break;
-                                default: buffer[written++] = (byte)'\\'; break;
+                                case (byte)'\\': buffer[written++] = (byte)'\\'; lastIndex = currentIndex + 2; break;
+                                case (byte)'"': buffer[written++] = (byte)'"'; lastIndex = currentIndex + 2; break;
+                                case (byte)'n': buffer[written++] = (byte)'\n'; lastIndex = currentIndex + 2; break;
+                                case (byte)'t': buffer[written++] = (byte)'\t'; lastIndex = currentIndex + 2; break;
+                                case (byte)'r': buffer[written++] = (byte)'\r'; lastIndex = currentIndex + 2; break;
+                                default:
+                                    buffer[written++] = (byte)'\\';
+                                    lastIndex = currentIndex + 1;
+                                    break;
                             }
                         }
                         else
                         {
-                            buffer[written++] = utf8[i];
+                            buffer[written++] = (byte)'\\';
+                            lastIndex = currentIndex + 1;
                         }
+
+                        currentIndex = (lastIndex < utf8.Length) ? utf8.Slice(lastIndex).IndexOf((byte)'\\') : -1;
+                        if (currentIndex >= 0) currentIndex += lastIndex;
                     }
+
+                    if (lastIndex < utf8.Length)
+                    {
+                        int length = utf8.Length - lastIndex;
+                        utf8.Slice(lastIndex, length).CopyTo(buffer.Slice(written));
+                        written += length;
+                    }
+
                     return Encoder.GetString(buffer.Slice(0, written));
                 }
             }
