@@ -1,4 +1,4 @@
-name: Benchmark.NET
+name: Benchmark
 
 on:
   release:
