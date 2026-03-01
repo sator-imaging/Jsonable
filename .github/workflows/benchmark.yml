@@ -1,0 +1,52 @@
+name: Benchmark
+
+on:
+  release:
+    types: [published]
+
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Target framework (net6.0 for Unity compatibility test)"
+        type: choice
+        required: true
+        default: all
+        options:
+          - all
+          - net10.0
+          - net6.0
+
+jobs:
+
+  benchmark:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        target: ${{ fromJSON(github.event_name == 'release' || github.event.inputs.target == 'all' && '["net10.0","net6.0"]' || format('["{0}"]', github.event.inputs.target)) }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          10.x.x
+          6.x.x
+
+    - name: Install libssl1.1 (for .NET 5)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libssl1.1 || sudo apt-get install -y libssl-dev
+
+    - name: Embed resources
+      run: |
+        dotnet run --project ./embedded -f ${{ matrix.target }} -- --force --quiet
+
+    - name: Run benchmark
+      run: |
+        dotnet run --project ./tests  -c Release -f ${{ matrix.target }} -- \
+          --benchmark  ##--short-run
+
+        echo "# 🚀 Benchmark Result (${{ matrix.target }})" >> $GITHUB_STEP_SUMMARY
+        cat BenchmarkDotNet.Artifacts/results/*.md >> $GITHUB_STEP_SUMMARY
