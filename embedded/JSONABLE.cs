@@ -172,7 +172,7 @@ namespace Jsonable
             }
 
 #if __supported
-            if (value.Length <= 64)  // Allows less than 64 chars (128 bytes). Escaping requires double size buffer so stackalloc-ing up to 256 bytes.
+            if (value.Length <= 140)  // Targeting X (Twitter). Ok to stackalloc up to 240 chars (480 bytes).
             {
                 return ShortSlowPath(value.AsSpan(), firstIndex);
 
