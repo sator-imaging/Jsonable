@@ -12,14 +12,12 @@ obsolete
 !tests
 
 !.gitignore
-!Directory.Build.props
+!*.props
 !icon-128px.png
 !*.slnx
 
 *.md
 !README.md
 !LICENSE.md
-!SPEC.md
 
-!run-benchmark.bat
-!run-debug.bat
+!JMC.md

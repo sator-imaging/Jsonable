@@ -191,7 +191,7 @@ partial void OnDidDeserialize();
 
 # 🔖 JSON with Metadata Comments
 
-A performance-aimed JSON extension format that provides enough information before parsing forward, especially for array and string. See [SPEC.md](SPEC.md) for details.
+A performance-aimed JSON extension format that provides enough information before parsing forward, especially for array and string. See [JMC.md](JMC.md) for details.
 
 
 &nbsp;
