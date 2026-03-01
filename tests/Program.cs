@@ -1,5 +1,6 @@
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Reports;
@@ -60,11 +61,10 @@ if (benchmark)
                         ? Job.ShortRun
                         : Job.MediumRun
             )
-            // .AddExporter(MarkdownExporter.Default)
-            // .AddExporter(HtmlExporter.Default)
             .WithOptions(ConfigOptions.DisableLogFile)
             .AddColumnProvider(DefaultColumnProviders.Instance)
             .AddLogger(ConsoleLogger.Default)
+            .AddExporter(MarkdownExporter.GitHub)
             .WithSummaryStyle(
                 SummaryStyle.Default
                 .WithTimeUnit(TimeUnit.Millisecond)
