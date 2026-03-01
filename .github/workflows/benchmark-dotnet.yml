@@ -23,11 +23,7 @@ jobs:
 
     strategy:
       matrix:
-        target: ${{ 
-          github.event_name == 'release'
-          && fromJson('["net10.0","net6.0"]')
-          || fromJson(format('["{0}"]', inputs.target))
-        }}
+        target: ${{ github.event_name == 'release' && '["net10.0","net6.0"]' || format('["{0}"]', github.event.inputs.target) }}
 
     steps:
     - name: actions/checkout@v4
