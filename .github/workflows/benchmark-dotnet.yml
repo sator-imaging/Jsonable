@@ -7,12 +7,12 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: "Target framework (.NET 6.0 Emulates Unity)"
-        required: true
-        default: net10.0
+        description: "Target framework (net6.0 for Unity compatibility test)"
         type: choice
-        # net6.0 for Unity compatibility tests
+        required: true
+        default: all
         options:
+          - all
           - net10.0
           - net6.0
 
@@ -23,7 +23,10 @@ jobs:
 
     strategy:
       matrix:
-        target: ${{ github.event_name == 'release' && '["net10.0","net6.0"]' || format('["{0}"]', github.event.inputs.target) }}
+        target: ${{ 
+          github.event_name == 'release' && fromJson('["net10.0","net6.0"]') || 
+          (github.event.inputs.target == 'all' && fromJson('["net10.0","net6.0"]') || fromJson(format('["{0}"]', github.event.inputs.target)))
+        }}
 
     steps:
     - uses: actions/checkout@v4
