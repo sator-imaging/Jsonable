@@ -1,27 +1,38 @@
-name: Benchmark .NET
+name: Benchmark.NET
 
 on:
   release:
     types: [published]
-  workflow_dispatch:
 
-env:
-  # net6.0 for Unity compatibility tests
-  target: net10.0  #net6.0
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Target framework (.NET 6.0 Emulates Unity)"
+        required: true
+        default: net10.0
+        type: choice
+        # net6.0 for Unity compatibility tests
+        options:
+          - net10.0
+          - net6.0
 
 jobs:
 
   benchmark:
     runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+    strategy:
+      matrix:
+        target: ${{ 
+          github.event_name == 'release'
+          && fromJson('["net10.0","net6.0"]')
+          || fromJson(format('["{0}"]', inputs.target))
+        }}
 
-    - name: Install .NET
-      uses: actions/setup-dotnet@v4
+    steps:
+    - name: actions/checkout@v4
+
+    - name: actions/setup-dotnet@v4
       with:
         dotnet-version: |
           10.x.x
@@ -34,8 +45,12 @@ jobs:
 
     - name: Embed resources
       run: |
-        dotnet run --project ./embedded  -f net10.0 -- --force --quiet
+        dotnet run --project ./embedded -f ${{ matrix.target }} -- --force --quiet
 
     - name: Run benchmark
       run: |
-        dotnet run --project ./tests  -c Release -f ${{ env.target }} -- --benchmark  ##--short-run
+        dotnet run --project ./tests  -c Release -f ${{ matrix.target }} -- \
+          --benchmark  ##--short-run
+
+        echo "# 🚀 Benchmark Result (${{ matrix.target }})" >> $GITHUB_STEP_SUMMARY
+        cat BenchmarkDotNet.Artifacts/results/*.md >> $GITHUB_STEP_SUMMARY
