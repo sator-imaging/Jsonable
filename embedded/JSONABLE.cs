@@ -172,6 +172,7 @@ namespace Jsonable
             }
 
 #if __supported
+#if __escape_uses_stack_if_possible
             if (value.Length <= 140)  // Targeting X (Twitter). Ok to stackalloc up to 240 chars (480 bytes).
             {
                 return ShortSlowPath(value.AsSpan(), firstIndex);
@@ -220,6 +221,7 @@ namespace Jsonable
                     return new string(buffer.Slice(0, written));
                 }
             }
+#endif
 #endif
 
             return SlowPath(value, firstIndex);
