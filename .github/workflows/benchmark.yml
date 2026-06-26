@@ -3,36 +3,21 @@ name: Benchmark
 on:
   release:
     types: [published]
-
   workflow_dispatch:
-    inputs:
-      target:
-        description: "Target framework (net6.0 for Unity compatibility test)"
-        type: choice
-        required: true
-        default: all
-        options:
-          - all
-          - net10.0
-          - net6.0
 
 jobs:
 
   benchmark:
-    runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        target: ${{ fromJSON(github.event_name == 'release' || github.event.inputs.target == 'all' && '["net10.0","net6.0"]' || format('["{0}"]', github.event.inputs.target)) }}
+        target: [ 'net10.0', 'net6.0' ]
 
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-
     - uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: |
-          10.x.x
-          6.x.x
+        dotnet-version: ${{ matrix.target }}
 
     - name: Install libssl1.1 (for .NET 5)
       run: |
